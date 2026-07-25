@@ -1,0 +1,145 @@
+/* ============================================================
+   TechLogistics — Sala de Control de Datos
+   Sistema de diseño: fondo tinta-marino, acentos semánticos
+   (crítico / advertencia / saludable), tipografía Space Grotesk
+   + Inter + IBM Plex Mono. Ver README para el detalle de tokens.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root {
+    --bg-base: #0D1321;
+    --bg-surface: #161D2F;
+    --bg-elevated: #1D2740;
+    --border: #2A3654;
+    --text-primary: #EDF1F7;
+    --text-muted: #8C96AD;
+    --accent-critico: #E4572E;
+    --accent-advertencia: #E8A33D;
+    --accent-saludable: #3FA796;
+    --accent-info: #5B8DEF;
+}
+
+/* --- Base --- */
+.stApp {
+    background: radial-gradient(circle at 15% 0%, #131b30 0%, var(--bg-base) 45%);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+}
+section[data-testid="stSidebar"] {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+}
+h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    letter-spacing: -0.01em;
+}
+[data-testid="stMetricValue"], .ledger-number {
+    font-family: 'IBM Plex Mono', monospace !important;
+}
+
+/* --- Encabezado / Hero --- */
+.hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    color: var(--accent-advertencia);
+    margin-bottom: 0.3rem;
+}
+.hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.15;
+}
+.hero-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    max-width: 640px;
+}
+
+/* --- Tarjeta Ledger (elemento firma) --- */
+.ledger-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent-info);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.6rem;
+}
+.ledger-card.critico { border-left-color: var(--accent-critico); }
+.ledger-card.advertencia { border-left-color: var(--accent-advertencia); }
+.ledger-card.saludable { border-left-color: var(--accent-saludable); }
+
+.ledger-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+.ledger-number {
+    font-size: 1.55rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+.ledger-context {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+/* --- Secciones --- */
+.section-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bg-base);
+    background: var(--accent-info);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    margin-bottom: 0.5rem;
+}
+.section-tag.critico { background: var(--accent-critico); }
+.section-tag.advertencia { background: var(--accent-advertencia); }
+.section-tag.saludable { background: var(--accent-saludable); }
+
+.narrative-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+}
+.narrative-box b { color: var(--accent-advertencia); }
+
+/* --- Tabs --- */
+button[data-baseweb="tab"] {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+}
+[data-testid="stTabs"] [aria-selected="true"] {
+    color: var(--accent-info) !important;
+}
+
+/* --- Botones --- */
+.stButton > button {
+    background: var(--accent-info);
+    color: #0A0E1A;
+    border: none;
+    font-weight: 600;
+    border-radius: 6px;
+}
+.stButton > button:hover {
+    background: #7AA3F5;
+    color: #0A0E1A;
+}

@@ -1,0 +1,351 @@
+{
+  "pregunta_1_fuga_capital": {
+    "transacciones_con_margen_negativo": 3239,
+    "pct_transacciones_negativas": 39.27,
+    "perdida_total_usd": -11692624.4,
+    "perdida_por_canal": {
+      "App": {
+        "pct_transacciones_negativas": 37.44,
+        "perdida_total_usd": -2689709.78
+      },
+      "Físico": {
+        "pct_transacciones_negativas": 41.21,
+        "perdida_total_usd": -3122093.24
+      },
+      "Online": {
+        "pct_transacciones_negativas": 37.34,
+        "perdida_total_usd": -2827909.28
+      },
+      "WhatsApp": {
+        "pct_transacciones_negativas": 40.98,
+        "perdida_total_usd": -3052912.1
+      }
+    },
+    "top10_skus_mas_perdida": {
+      "PROD-2858": {
+        "sum": -58142.72,
+        "count": 7
+      },
+      "PROD-2609": {
+        "sum": -50553.68,
+        "count": 8
+      },
+      "PROD-3432": {
+        "sum": -45122.4,
+        "count": 8
+      },
+      "PROD-1953": {
+        "sum": -42038.64,
+        "count": 5
+      },
+      "PROD-2295": {
+        "sum": -41711.64,
+        "count": 6
+      },
+      "PROD-2283": {
+        "sum": -41224.71,
+        "count": 6
+      },
+      "PROD-2908": {
+        "sum": -37873.24,
+        "count": 5
+      },
+      "PROD-2672": {
+        "sum": -37131.12,
+        "count": 4
+      },
+      "PROD-1382": {
+        "sum": -36676.8,
+        "count": 4
+      },
+      "PROD-1903": {
+        "sum": -36232.34,
+        "count": 6
+      }
+    }
+  },
+  "pregunta_2_crisis_logistica": {
+    "correlacion_general_tiempo_vs_nps": 0.003,
+    "zona_mas_critica": {
+      "Ciudad": "Bucaramanga",
+      "Bodega": "Occidente",
+      "n": 55,
+      "correlacion": -0.121
+    },
+    "tabla_correlaciones_por_zona": [
+      {
+        "Ciudad": "Bucaramanga",
+        "Bodega": "Occidente",
+        "n": 55,
+        "correlacion": -0.121
+      },
+      {
+        "Ciudad": "Cali",
+        "Bodega": "Sur",
+        "n": 56,
+        "correlacion": -0.107
+      },
+      {
+        "Ciudad": "Cali",
+        "Bodega": "Occidente",
+        "n": 76,
+        "correlacion": -0.105
+      },
+      {
+        "Ciudad": "Bogotá",
+        "Bodega": "Zona_Franca",
+        "n": 136,
+        "correlacion": -0.097
+      },
+      {
+        "Ciudad": "Bucaramanga",
+        "Bodega": "Sur",
+        "n": 61,
+        "correlacion": -0.078
+      },
+      {
+        "Ciudad": "Bucaramanga",
+        "Bodega": "Norte",
+        "n": 123,
+        "correlacion": -0.07
+      },
+      {
+        "Ciudad": "Medellín",
+        "Bodega": "Sur",
+        "n": 138,
+        "correlacion": -0.062
+      },
+      {
+        "Ciudad": "Barranquilla",
+        "Bodega": "Norte",
+        "n": 152,
+        "correlacion": -0.059
+      },
+      {
+        "Ciudad": "Bogotá",
+        "Bodega": "Norte",
+        "n": 253,
+        "correlacion": -0.054
+      },
+      {
+        "Ciudad": "Bogotá",
+        "Bodega": "Bod-Ext-99",
+        "n": 131,
+        "correlacion": -0.035
+      },
+      {
+        "Ciudad": "Medellín",
+        "Bodega": "Sin Bodega",
+        "n": 155,
+        "correlacion": -0.035
+      },
+      {
+        "Ciudad": "Cali",
+        "Bodega": "Zona_Franca",
+        "n": 73,
+        "correlacion": -0.031
+      },
+      {
+        "Ciudad": "Bogotá",
+        "Bodega": "Occidente",
+        "n": 124,
+        "correlacion": -0.009
+      },
+      {
+        "Ciudad": "Medellín",
+        "Bodega": "Zona_Franca",
+        "n": 115,
+        "correlacion": -0.004
+      },
+      {
+        "Ciudad": "Barranquilla",
+        "Bodega": "Bod-Ext-99",
+        "n": 61,
+        "correlacion": 0.018
+      },
+      {
+        "Ciudad": "Cali",
+        "Bodega": "Norte",
+        "n": 110,
+        "correlacion": 0.02
+      },
+      {
+        "Ciudad": "Medellín",
+        "Bodega": "Bod-Ext-99",
+        "n": 115,
+        "correlacion": 0.022
+      },
+      {
+        "Ciudad": "Barranquilla",
+        "Bodega": "Sur",
+        "n": 64,
+        "correlacion": 0.032
+      },
+      {
+        "Ciudad": "Bucaramanga",
+        "Bodega": "Sin Bodega",
+        "n": 82,
+        "correlacion": 0.042
+      },
+      {
+        "Ciudad": "Cali",
+        "Bodega": "Bod-Ext-99",
+        "n": 48,
+        "correlacion": 0.046
+      },
+      {
+        "Ciudad": "Barranquilla",
+        "Bodega": "Occidente",
+        "n": 53,
+        "correlacion": 0.047
+      },
+      {
+        "Ciudad": "Bucaramanga",
+        "Bodega": "Bod-Ext-99",
+        "n": 72,
+        "correlacion": 0.048
+      },
+      {
+        "Ciudad": "Medellín",
+        "Bodega": "Norte",
+        "n": 215,
+        "correlacion": 0.06
+      },
+      {
+        "Ciudad": "Bogotá",
+        "Bodega": "Sur",
+        "n": 135,
+        "correlacion": 0.069
+      },
+      {
+        "Ciudad": "Medellín",
+        "Bodega": "Occidente",
+        "n": 131,
+        "correlacion": 0.084
+      },
+      {
+        "Ciudad": "Barranquilla",
+        "Bodega": "Zona_Franca",
+        "n": 42,
+        "correlacion": 0.101
+      },
+      {
+        "Ciudad": "Bogotá",
+        "Bodega": "Sin Bodega",
+        "n": 158,
+        "correlacion": 0.109
+      },
+      {
+        "Ciudad": "Cali",
+        "Bodega": "Sin Bodega",
+        "n": 86,
+        "correlacion": 0.132
+      },
+      {
+        "Ciudad": "Bucaramanga",
+        "Bodega": "Zona_Franca",
+        "n": 41,
+        "correlacion": 0.142
+      },
+      {
+        "Ciudad": "Barranquilla",
+        "Bodega": "Sin Bodega",
+        "n": 67,
+        "correlacion": 0.173
+      }
+    ]
+  },
+  "pregunta_3_venta_invisible": {
+    "ingreso_total_usd": 75251241.66,
+    "ingreso_en_riesgo_usd": 13131809.08,
+    "pct_ingreso_en_riesgo": 17.45,
+    "transacciones_fantasma": 1751,
+    "pct_transacciones_fantasma": 17.51,
+    "skus_fantasma_distintos": 480
+  },
+  "pregunta_4_diagnostico_fidelidad": {
+    "resumen_por_categoria": {
+      "Accesorios": {
+        "Stock_Promedio": 1004.15,
+        "NPS_Promedio": 0.83,
+        "Rating_Producto_Promedio": 2.98,
+        "Margen_Promedio_USD": 1542.92
+      },
+      "Laptops": {
+        "Stock_Promedio": 995.23,
+        "NPS_Promedio": 2.35,
+        "Rating_Producto_Promedio": 2.98,
+        "Margen_Promedio_USD": 1831.77
+      },
+      "Monitores": {
+        "Stock_Promedio": 987.68,
+        "NPS_Promedio": 0.05,
+        "Rating_Producto_Promedio": 2.97,
+        "Margen_Promedio_USD": 1903.85
+      },
+      "Sin Categoría": {
+        "Stock_Promedio": 1008.54,
+        "NPS_Promedio": -2.09,
+        "Rating_Producto_Promedio": 3.06,
+        "Margen_Promedio_USD": 1569.45
+      },
+      "Smartphones": {
+        "Stock_Promedio": 1045.43,
+        "NPS_Promedio": -4.22,
+        "Rating_Producto_Promedio": 2.98,
+        "Margen_Promedio_USD": 1508.68
+      },
+      "Tablets": {
+        "Stock_Promedio": 1030.31,
+        "NPS_Promedio": 3.96,
+        "Rating_Producto_Promedio": 3.02,
+        "Margen_Promedio_USD": 2139.03
+      }
+    },
+    "categorias_paradoja_stock_alto_nps_bajo": {
+      "Sin Categoría": {
+        "Stock_Promedio": 1008.54,
+        "NPS_Promedio": -2.09,
+        "Rating_Producto_Promedio": 3.06,
+        "Margen_Promedio_USD": 1569.45
+      },
+      "Smartphones": {
+        "Stock_Promedio": 1045.43,
+        "NPS_Promedio": -4.22,
+        "Rating_Producto_Promedio": 2.98,
+        "Margen_Promedio_USD": 1508.68
+      }
+    }
+  },
+  "pregunta_5_riesgo_operativo": {
+    "resumen_por_bodega": {
+      "Bod-Ext-99": {
+        "Dias_Desde_Revision_Promedio": 355.72,
+        "Tasa_Ticket_Soporte": 20.1,
+        "N_Transacciones": 1393
+      },
+      "Norte": {
+        "Dias_Desde_Revision_Promedio": 344.575,
+        "Tasa_Ticket_Soporte": 20.61,
+        "N_Transacciones": 2785
+      },
+      "Occidente": {
+        "Dias_Desde_Revision_Promedio": 356.114,
+        "Tasa_Ticket_Soporte": 22.02,
+        "N_Transacciones": 1276
+      },
+      "Sur": {
+        "Dias_Desde_Revision_Promedio": 329.791,
+        "Tasa_Ticket_Soporte": 19.72,
+        "N_Transacciones": 1476
+      },
+      "Zona_Franca": {
+        "Dias_Desde_Revision_Promedio": 347.147,
+        "Tasa_Ticket_Soporte": 20.7,
+        "N_Transacciones": 1319
+      }
+    },
+    "correlacion_antiguedad_vs_tickets": 0.634,
+    "bodega_mas_desactualizada": "Occidente"
+  }
+}

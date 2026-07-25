@@ -1,0 +1,14 @@
+# Secretos — NUNCA subir la API key real
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Sistema operativo / editor
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,56 @@
+{
+  "inventario": {
+    "categoria_normalizada": {
+      "Laptops": 632,
+      "Smartphones": 620,
+      "Monitores": 327,
+      "Tablets": 309,
+      "Accesorios": 307,
+      "Sin Categoría": 305
+    },
+    "stock_actual_negativos_tratados": 60,
+    "stock_actual_nulos_originales": 100,
+    "stock_actual_imputados_total": 160,
+    "costo_unitario_outliers_detectados": 1,
+    "costo_unitario_limites_iqr": [
+      0,
+      2207.75
+    ],
+    "lead_time_nulos_imputados": 403,
+    "bodegas_normalizadas": {
+      "Norte": 844,
+      "Sur": 436,
+      "Bod-Ext-99": 424,
+      "Zona_Franca": 408,
+      "Occidente": 388
+    },
+    "duplicados_fila_completa": 0,
+    "duplicados_sku_id": 0
+  },
+  "transacciones": {
+    "cantidad_vendida_centinela_-5_tratados": 100,
+    "tiempo_entrega_centinela_999_tratados": 50,
+    "costo_envio_nulos_imputados": 834,
+    "estado_envio_nulos_marcados": 1683,
+    "ciudad_destino_sin_dato_(Ventas_Web)": 1290,
+    "ciudad_destino_normalizada": {
+      "Bogotá": 2528,
+      "Medellín": 2457,
+      "Sin Ciudad": 1290,
+      "Cali": 1256,
+      "Bucaramanga": 1250,
+      "Barranquilla": 1219
+    },
+    "fechas_futuras_marcadas": 75,
+    "ventas_fantasma_detectadas": 1751,
+    "skus_fantasma_distintos": 480,
+    "duplicados_fila_completa": 0,
+    "duplicados_transaccion_id": 0
+  },
+  "feedback": {
+    "feedback_id_colisiones_detectadas": 969,
+    "duplicados_fila_completa": 0,
+    "rating_producto_centinela_99_tratados": 30,
+    "edad_cliente_invalidas_tratadas": 23
+  }
+}

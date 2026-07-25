@@ -1,0 +1,48 @@
+{
+  "antes": {
+    "inventario": {
+      "n_registros": 2500,
+      "completitud": 89.94,
+      "validez": 85.72,
+      "unicidad": 100.0,
+      "health_score": 91.89
+    },
+    "transacciones": {
+      "n_registros": 10000,
+      "completitud": 87.42,
+      "validez": 71.02,
+      "unicidad": 100.0,
+      "health_score": 86.14
+    },
+    "feedback": {
+      "n_registros": 4500,
+      "completitud": 80.27,
+      "validez": 99.0,
+      "unicidad": 88.89,
+      "health_score": 89.39
+    }
+  },
+  "despues": {
+    "inventario": {
+      "n_registros": 2500,
+      "completitud": 100.0,
+      "validez": 100.0,
+      "unicidad": 100.0,
+      "health_score": 100.0
+    },
+    "transacciones": {
+      "n_registros": 10000,
+      "completitud": 100.0,
+      "validez": 100.0,
+      "unicidad": 100.0,
+      "health_score": 100.0
+    },
+    "feedback": {
+      "n_registros": 4500,
+      "completitud": 100.0,
+      "validez": 100.0,
+      "unicidad": 100.0,
+      "health_score": 100.0
+    }
+  }
+}
