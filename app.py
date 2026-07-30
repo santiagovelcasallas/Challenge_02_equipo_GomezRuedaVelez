@@ -30,7 +30,7 @@ if _necesita_pipeline():
 
 from ui.components import inject_css, register_plotly_theme, hero, ledger_row
 from services.data_loader import load_master_table, load_health_score, load_decisiones, apply_filters
-from ui import tab_auditoria, tab_operaciones, tab_cliente, tab_ia
+from ui import tab_auditoria, tab_tiempo, tab_operaciones, tab_cliente, tab_ia
 
 st.set_page_config(
     page_title="TechLogistics · Sala de Control de Datos",
@@ -62,7 +62,6 @@ with st.sidebar:
     categorias = st.multiselect("Categoría", sorted(master["Categoria"].unique()))
     bodegas = st.multiselect("Bodega de origen", sorted(master["Bodega_Origen"].unique()))
     canales = st.multiselect("Canal de venta", sorted(master["Canal_Venta"].unique()))
-    ciudades = st.multiselect("Ciudad de destino", sorted(master["Ciudad_Destino"].unique()))
 
     st.write("")
     if st.button("🔄 Refrescar análisis"):
@@ -75,7 +74,7 @@ with st.sidebar:
         "Ciencia de Datos · Universidad EAFIT"
     )
 
-df_filtrado = apply_filters(master, fecha_range, categorias, bodegas, canales, ciudades)
+df_filtrado = apply_filters(master, fecha_range, categorias, bodegas, canales)
 
 # --- Hero ---
 hero(
@@ -98,13 +97,17 @@ ledger_row([
 ])
 
 st.write("")
-tab1, tab2, tab3, tab4 = st.tabs(["📋 Auditoría", "🚚 Operaciones", "👥 Cliente", "🧠 Insights de IA"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📋 Auditoría", "📈 Serie de Tiempo", "🚚 Operaciones", "👥 Cliente", "🧠 Insights de IA"
+])
 
 with tab1:
     tab_auditoria.render(health, decisiones)
 with tab2:
-    tab_operaciones.render(df_filtrado)
+    tab_tiempo.render(df_filtrado, master)
 with tab3:
-    tab_cliente.render(df_filtrado)
+    tab_operaciones.render(df_filtrado)
 with tab4:
+    tab_cliente.render(df_filtrado)
+with tab5:
     tab_ia.render(df_filtrado)
