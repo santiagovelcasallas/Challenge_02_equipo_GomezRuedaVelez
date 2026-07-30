@@ -6,11 +6,49 @@ import plotly.express as px
 import plotly.graph_objects as go
 from ui.components import ledger_row, section_tag, narrative, PALETTE
 
+# Fecha de corte del proyecto (misma constante que src/cleaning_transacciones.py y
+# src/cleaning_inventario.py). Se repite aquí en vez de importarla porque este chart
+# debe seguir siendo correcto por sí solo, sin depender de que el sidebar filtre las
+# fechas: así el criterio de aceptación de la guía de validación ("el gráfico de series
+# de tiempo no debe mostrar actividad más allá del periodo real de operación") se cumple
+# aunque el usuario seleccione un rango de fechas que incluya las 75 transacciones con
+# Fecha_Futura_Invalida.
+REFERENCE_DATE = pd.Timestamp("2026-01-31")
+
 
 def render(df: pd.DataFrame):
     if df.empty:
         st.warning("No hay transacciones para el filtro seleccionado.")
         return
+
+    # ---------------- Panorama temporal: ventas en el tiempo ----------------
+    section_tag("PANORAMA TEMPORAL · VENTAS EN EL TIEMPO", "info")
+    df_periodo_real = df[df["Fecha_Venta"] <= REFERENCE_DATE]
+    serie = (
+        df_periodo_real.assign(Mes=df_periodo_real["Fecha_Venta"].dt.to_period("M").dt.to_timestamp())
+        .groupby("Mes")
+        .agg(Ingreso_Bruto=("Ingreso_Bruto", "sum"), Transacciones=("Transaccion_ID", "count"))
+        .reset_index()
+    )
+    fig_ts = px.line(serie, x="Mes", y="Ingreso_Bruto", markers=True)
+    fig_ts.update_traces(line_color=PALETTE["info"])
+    fig_ts.update_layout(title="Ingreso bruto mensual (filtro activo)", yaxis_title="USD", height=280)
+    st.plotly_chart(fig_ts, width="stretch", key="serie_tiempo")
+    n_excluidas = int((df["Fecha_Venta"] > REFERENCE_DATE).sum())
+    nota_excluidas = (
+        f" En este filtro hay {n_excluidas} transacción(es) con fecha posterior al "
+        f"{REFERENCE_DATE.date()} (marcadas <code>Fecha_Futura_Invalida</code>); se "
+        "excluyen de esta serie para no mostrar actividad fuera del periodo real."
+        if n_excluidas else ""
+    )
+    narrative(
+        f"Caso de prueba <b>Tratamiento de Fechas Futuras</b> (guía de validación): esta "
+        f"serie nunca muestra actividad posterior a la fecha de corte del proyecto "
+        f"(<b>{REFERENCE_DATE.date()}</b>), sin importar el rango de fechas elegido en el "
+        f"sidebar.{nota_excluidas}"
+    )
+
+    st.write("---")
 
     # ---------------- Pregunta 1: Fuga de Capital ----------------
     section_tag("PREGUNTA 1 · FUGA DE CAPITAL Y RENTABILIDAD", "critico")

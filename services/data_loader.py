@@ -32,7 +32,7 @@ def load_respuestas() -> dict:
         return json.load(f)
 
 
-def apply_filters(df: pd.DataFrame, fecha_range, categorias, bodegas, canales) -> pd.DataFrame:
+def apply_filters(df: pd.DataFrame, fecha_range, categorias, bodegas, canales, ciudades=None) -> pd.DataFrame:
     out = df.copy()
     if fecha_range and len(fecha_range) == 2:
         start, end = pd.Timestamp(fecha_range[0]), pd.Timestamp(fecha_range[1])
@@ -43,6 +43,8 @@ def apply_filters(df: pd.DataFrame, fecha_range, categorias, bodegas, canales) -
         out = out[out["Bodega_Origen"].isin(bodegas)]
     if canales:
         out = out[out["Canal_Venta"].isin(canales)]
+    if ciudades:
+        out = out[out["Ciudad_Destino"].isin(ciudades)]
     return out
 
 
