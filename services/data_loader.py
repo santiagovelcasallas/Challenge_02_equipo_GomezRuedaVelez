@@ -77,3 +77,19 @@ def cleaning_report_csv(health: dict, decisiones: dict) -> bytes:
     buf.append("\n=== LOG DE DECISIONES DE LIMPIEZA ===")
     buf.append(df_dec.to_csv(index=False))
     return "\n".join(buf).encode("utf-8")
+
+
+@st.cache_data
+def load_health_trazable() -> dict:
+    """Versión enriquecida con nulidad por columna e integridad de negocio."""
+    p = f"{OUT_DIR}/health_score_trazable.json"
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+@st.cache_data
+def load_decisiones_trazable() -> dict:
+    """Versión con evidencia calculada y _fuente por decisión."""
+    p = f"{OUT_DIR}/decisiones_limpieza_trazable.json"
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
