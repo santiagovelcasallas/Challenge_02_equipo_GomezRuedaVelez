@@ -1,13 +1,33 @@
 """
 TechLogistics S.A.S. — Sala de Control de Datos
 =================================================
-Dashboard Streamlit (Fase 3). Requiere haber corrido antes `run_pipeline.py`
-para generar los archivos en outputs/.
-
-Ejecutar: streamlit run app.py
+Dashboard Streamlit (Fase 3).
+El pipeline de limpieza (run_pipeline.py) se ejecuta automáticamente al
+arrancar si los outputs no existen o si los datos crudos son más recientes
+que el master_table.csv generado. Así funciona tanto en local como en
+Streamlit Cloud sin pasos manuales.
 """
 
 import streamlit as st
+from pathlib import Path
+
+# ── Auto-pipeline: corre si faltan outputs o los datos son más nuevos ──────
+def _necesita_pipeline() -> bool:
+    master = Path("outputs/master_table.csv")
+    if not master.exists():
+        return True
+    # Si cualquier CSV crudo es más nuevo que el master, regenerar
+    for csv in Path("data").glob("*.csv"):
+        if csv.stat().st_mtime > master.stat().st_mtime:
+            return True
+    return False
+
+if _necesita_pipeline():
+    with st.spinner("⚙️ Ejecutando pipeline de limpieza e integración..."):
+        import run_pipeline
+        run_pipeline.main()
+    st.cache_data.clear()
+
 from ui.components import inject_css, register_plotly_theme, hero, ledger_row
 from services.data_loader import load_master_table, load_health_score, load_decisiones, apply_filters
 from ui import tab_auditoria, tab_operaciones, tab_cliente, tab_ia
