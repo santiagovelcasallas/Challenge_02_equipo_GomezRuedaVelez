@@ -22,6 +22,12 @@ import streamlit as st
 
 from ui.components import ledger_row, narrative, PALETTE
 
+# Fecha de corte del proyecto (misma constante que src/cleaning_transacciones.py
+# y src/cleaning_inventario.py). Se define aquí en vez de importarla para que la
+# serie de tiempo siga siendo correcta por sí sola, aunque el selector de fechas
+# del sidebar permita elegir un rango que incluya fechas futuras inválidas.
+REFERENCE_DATE = pd.Timestamp("2026-01-31")
+
 # ── Estilos Matplotlib coherentes con el dashboard oscuro ─────────────────
 MPL_STYLE = {
     "figure.facecolor":  "#161D2F",
@@ -96,6 +102,48 @@ def render(df: pd.DataFrame):
 
     df = df.copy()
     df["Costo_Atipico"] = df["Costo_Atipico"].astype(str).str.lower().isin(["true","1"])
+
+    # =========================================================================
+    # PANORAMA TEMPORAL — serie de tiempo (caso de prueba de la Guía de Validación)
+    # =========================================================================
+    _seccion("PANORAMA TEMPORAL · VENTAS EN EL TIEMPO", "#5B8DEF")
+
+    # El filtro se aplica aquí y no en el sidebar a propósito: así el criterio de
+    # aceptación de la Guía ("el gráfico de series de tiempo no debe mostrar
+    # actividad más allá del periodo real de operación") se cumple sin depender
+    # del rango de fechas que elija el usuario.
+    df_periodo = df[df["Fecha_Venta"] <= REFERENCE_DATE]
+    serie = (
+        df_periodo.assign(Mes=df_periodo["Fecha_Venta"].dt.to_period("M").dt.to_timestamp())
+        .groupby("Mes")
+        .agg(Ingreso_Bruto=("Ingreso_Bruto", "sum"),
+             Transacciones=("Transaccion_ID", "count"))
+        .reset_index()
+    )
+
+    fig_ts = go.Figure(go.Scatter(
+        x=serie["Mes"], y=serie["Ingreso_Bruto"],
+        mode="lines+markers",
+        line=dict(color=PALETTE["info"], width=2),
+        marker=dict(size=6),
+        customdata=serie["Transacciones"],
+        hovertemplate="<b>%{x|%b %Y}</b><br>Ingreso: USD %{y:,.0f}"
+                      "<br>Transacciones: %{customdata:,}<extra></extra>",
+    ))
+    fig_ts.update_layout(title="Ingreso bruto mensual (filtro activo)",
+                         xaxis_title="Mes", yaxis_title="USD", height=300)
+    st.plotly_chart(fig_ts, use_container_width=True, key="serie_tiempo")
+
+    n_fuera = int((df["Fecha_Venta"] > REFERENCE_DATE).sum())
+    narrative(
+        f"Caso de prueba <b>Tratamiento de Fechas Futuras</b> (Guía de Validación): la serie "
+        f"nunca muestra actividad posterior a la fecha de corte del proyecto "
+        f"(<b>{REFERENCE_DATE.date()}</b>), sin importar el rango elegido en la barra lateral."
+        + (f" En este filtro hay <b>{n_fuera}</b> transacción(es) con fecha posterior "
+           "(marcadas <code>Fecha_Futura_Invalida</code> en la limpieza); se excluyen de "
+           "esta gráfica pero no se borran del dataset."
+           if n_fuera else "")
+    )
 
     # =========================================================================
     # PREGUNTA 1 — FUGA DE CAPITAL Y RENTABILIDAD
