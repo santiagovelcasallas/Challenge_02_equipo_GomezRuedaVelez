@@ -1,118 +1,165 @@
 """
-Limpieza de transacciones_logistica_v2.csv
-============================================
+cleaning_transacciones.py — Limpieza de transacciones_logistica_v2.csv
+======================================================================
+Misma filosofía que inventario: cada decisión trae evidencia CALCULADA y _fuente.
 
-Decisiones de limpieza documentadas (Fase 1 - Auditoría de Calidad):
-
-1. Cantidad_Vendida: 100 registros (1%) tienen el valor EXACTO -5 (nunca otro
-   negativo). Que sea siempre el mismo número descarta un error de digitación
-   aleatorio y apunta a un código centinela/de error del sistema de origen
-   (mismo patrón que Rating_Producto=99 y Tiempo_Entrega_Real=999). Se trata
-   como dato faltante y se imputa con la MEDIANA (7 unidades), no con el valor
-   absoluto, porque tomar abs(-5)=5 fabricaría un valor puntual sin respaldo
-   estadístico.
-
-2. Tiempo_Entrega_Real = 999 (50 registros): mismo patrón de código centinela,
-   confirmado también por rango intercuartílico (IQR). Se trata como dato
-   faltante y se imputa con la mediana (15 días). Se conserva la bandera
-   'Entrega_Atipica' para poder excluir estos registros de análisis de
-   correlación tiempo-satisfacción si se requiere mayor rigor (Pregunta 2).
-
-3. Costo_Envio: 8.34% de nulos, distribución simétrica (media≈52.4,
-   mediana≈52.4) -> imputación por media/mediana (equivalentes aquí).
-
-4. Estado_Envio: 16.83% de nulos. NO se imputa con la moda porque eso
-   fabricaría una confirmación de entrega que no ocurrió; se deja como
-   categoría explícita "Sin Información".
-
-5. Ciudad_Destino: se detectan variantes de la misma ciudad (BOG/Bogotá,
-   MED/Medellín) que se consolidan. Además, el valor "Ventas_Web" (12.9% de
-   los registros) NO es una ciudad sino que parece un residuo del campo
-   Canal_Venta. Se validó cruzando Ciudad_Destino=='Ventas_Web' contra
-   Canal_Venta real: la distribución resultante es proporcional a la
-   distribución general de canales (~25% cada uno), es decir, NO está
-   correlacionada con un canal específico. Esto descarta que sea un error de
-   mapeo recuperable; se trata como dato geográfico no disponible
-   ("Sin Ciudad") y se excluye del análisis geográfico (Pregunta 2), pero se
-   mantiene la fila para no perder el resto de la información transaccional.
-
-6. Fecha_Venta: formato único y consistente (DD/MM/AAAA), sin necesidad de
-   parseo múltiple. Se validan fechas futuras respecto a la fecha de corte
-   del proyecto (2026-01-31, ver README): 75 registros (0.75%) caen entre el
-   1 y el 4 de febrero de 2026. Se marcan como 'Fecha_Futura_Invalida' y se
-   excluyen de gráficas de series de tiempo, conservando la fila.
-
-7. SKU_ID huérfano ("Venta Fantasma", Dilema central del reto): 1,751
-   transacciones (17.51%) referencian 480 SKUs distintos que NO existen en el
-   inventario maestro, cada uno repitiéndose en promedio ~3.6 veces (rango
-   1-10). Este patrón —muchos SKUs distintos con recurrencia orgánica y
-   moderada, sin concentración en unos pocos códigos— es más consistente con
-   una FALLA DE CATÁLOGO (productos nuevos vendidos antes de ser registrados
-   en el ERP) que con fraude (que típicamente se concentraría en pocos
-   códigos explotados repetidamente). Decisión: se clasifican como
-   "Producto No Catalogado" y se conservan en el LEFT JOIN con inventario
-   (ver integration.py) para cuantificar el impacto financiero real
-   (Pregunta 3), en vez de descartarlas.
+Separación clave (que corrige el enfoque anterior):
+  - DEFECTOS de dato (centinelas) -> penalizan validez y se imputan.
+  - HALLAZGOS de negocio (SKU fantasma, 'Ventas_Web', estado sin dato, fecha
+    futura) -> NO se "corrigen", se AÍSLAN con banderas y se reportan en
+    integridad. No penalizan el health score porque no son errores de dato.
 """
 
 import pandas as pd
 import numpy as np
 
 REFERENCE_DATE = pd.Timestamp("2026-01-31")
-
-CIUDAD_MAP = {
-    "BOG": "Bogotá",
-    "MED": "Medellín",
-}
+CIUDAD_MAP = {"BOG": "Bogotá", "MED": "Medellín"}
 
 
-def clean_transacciones(raw: pd.DataFrame, sku_maestro: set) -> tuple[pd.DataFrame, dict]:
-    """Limpia transacciones_logistica_v2 y devuelve (df_limpio, log_de_decisiones)."""
+def clean_transacciones(raw: pd.DataFrame, sku_maestro: set) -> tuple[pd.DataFrame, list]:
     df = raw.copy()
-    log = {}
+    dec = []
 
-    # --- 1. Cantidad_Vendida: -5 centinela -> nulo -> imputar mediana ---
-    centinela_qty = (df["Cantidad_Vendida"] == -5).sum()
+    # --- 1. Cantidad_Vendida: centinela -5 ---
+    negs = sorted(df.loc[df["Cantidad_Vendida"] < 0, "Cantidad_Vendida"].unique().tolist())
+    n_cent = int((df["Cantidad_Vendida"] == -5).sum())
+    med = float(df.loc[df["Cantidad_Vendida"] != -5, "Cantidad_Vendida"].median())
     df.loc[df["Cantidad_Vendida"] == -5, "Cantidad_Vendida"] = np.nan
-    df["Cantidad_Vendida"] = df["Cantidad_Vendida"].fillna(df["Cantidad_Vendida"].median())
-    log["cantidad_vendida_centinela_-5_tratados"] = int(centinela_qty)
+    df["Cantidad_Vendida"] = df["Cantidad_Vendida"].fillna(med)
+    dec.append({
+        "campo": "Cantidad_Vendida",
+        "problema": "valor negativo imposible",
+        "evidencia": {"valores_negativos_unicos": negs, "n_afectados": n_cent,
+                      "mediana_imputada": med},
+        "accion": "tratar -5 como nulo e imputar MEDIANA",
+        "justificacion": (f"el ÚNICO negativo es exactamente -5 ({n_cent} filas): patrón "
+                          "de código centinela, no error aleatorio. No se usa abs(-5)=5 "
+                          "porque fabricaría un valor sin respaldo. MEDIANA por robustez."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#1",
+    })
 
-    # --- 2. Tiempo_Entrega_Real: 999 centinela -> nulo -> imputar mediana ---
-    centinela_tiempo = (df["Tiempo_Entrega_Real"] == 999).sum()
+    # --- 2. Tiempo_Entrega_Real: centinela 999 ---
+    n_999 = int((df["Tiempo_Entrega_Real"] == 999).sum())
+    otros_altos = int(((df["Tiempo_Entrega_Real"] > 100) & (df["Tiempo_Entrega_Real"] != 999)).sum())
+    med_t = float(df.loc[df["Tiempo_Entrega_Real"] != 999, "Tiempo_Entrega_Real"].median())
     df["Entrega_Atipica"] = df["Tiempo_Entrega_Real"] == 999
     df.loc[df["Tiempo_Entrega_Real"] == 999, "Tiempo_Entrega_Real"] = np.nan
-    df["Tiempo_Entrega_Real"] = df["Tiempo_Entrega_Real"].fillna(df["Tiempo_Entrega_Real"].median())
-    log["tiempo_entrega_centinela_999_tratados"] = int(centinela_tiempo)
+    df["Tiempo_Entrega_Real"] = df["Tiempo_Entrega_Real"].fillna(med_t)
+    dec.append({
+        "campo": "Tiempo_Entrega_Real",
+        "problema": "valor 999 (código centinela de error)",
+        "evidencia": {"n_999": n_999, "otros_valores_>100": otros_altos,
+                      "mediana_imputada": med_t},
+        "accion": "999 -> nulo -> imputar MEDIANA; conservar bandera 'Entrega_Atipica'",
+        "justificacion": ("no hay otros valores >100: el 999 es centinela aislado. La "
+                          "bandera permite excluirlos de la correlación tiempo-NPS (Pregunta 2)."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#2",
+    })
 
-    # --- 3. Costo_Envio: imputar mediana ---
-    nulos_envio = df["Costo_Envio"].isnull().sum()
+    # --- 3. Costo_Envio: nulos, distribución simétrica ---
+    nul_env = int(df["Costo_Envio"].isnull().sum())
+    media_e, med_e = float(df["Costo_Envio"].mean()), float(df["Costo_Envio"].median())
+    skew_e = round(float(df["Costo_Envio"].skew()), 3)
     df["Costo_Envio"] = df["Costo_Envio"].fillna(df["Costo_Envio"].median())
-    log["costo_envio_nulos_imputados"] = int(nulos_envio)
+    dec.append({
+        "campo": "Costo_Envio",
+        "problema": "nulos",
+        "evidencia": {"nulos": nul_env, "pct": round(nul_env / len(df) * 100, 2),
+                      "media": round(media_e, 2), "mediana": round(med_e, 2), "skew": skew_e},
+        "accion": "imputar MEDIANA",
+        "justificacion": (f"skew={skew_e} (simétrica): media≈mediana. Se elige MEDIANA por "
+                          "consistencia con el resto del pipeline; el resultado es equivalente."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#3",
+    })
 
-    # --- 4. Estado_Envio: nulo -> categoría explícita ---
-    nulos_estado = df["Estado_Envio"].isnull().sum()
+    # --- 4. Estado_Envio: nulo -> categoría explícita (NO moda) ---
+    nul_est = int(df["Estado_Envio"].isnull().sum())
     df["Estado_Envio"] = df["Estado_Envio"].fillna("Sin Información")
-    log["estado_envio_nulos_marcados"] = int(nulos_estado)
+    dec.append({
+        "campo": "Estado_Envio",
+        "problema": "nulos",
+        "evidencia": {"nulos": nul_est, "pct": round(nul_est / len(df) * 100, 2)},
+        "accion": "marcar como categoría explícita 'Sin Información' (NO imputar moda)",
+        "justificacion": ("imputar la moda fabricaría una confirmación de entrega que no "
+                          "ocurrió. La ausencia se etiqueta, no se inventa."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#4",
+    })
 
-    # --- 5. Ciudad_Destino: normalizar + aislar "Ventas_Web" ---
+    # --- 5. Ciudad_Destino: normalizar + aislar 'Ventas_Web' con evidencia ---
     df["Ciudad_Destino"] = df["Ciudad_Destino"].replace(CIUDAD_MAP)
-    ventas_web_mask = df["Ciudad_Destino"] == "Ventas_Web"
-    log["ciudad_destino_sin_dato_(Ventas_Web)"] = int(ventas_web_mask.sum())
-    df.loc[ventas_web_mask, "Ciudad_Destino"] = "Sin Ciudad"
-    log["ciudad_destino_normalizada"] = df["Ciudad_Destino"].value_counts().to_dict()
+    web = df["Ciudad_Destino"] == "Ventas_Web"
+    dist_web = (df.loc[web, "Canal_Venta"].value_counts(normalize=True) * 100).round(1).to_dict()
+    dist_glob = (df["Canal_Venta"].value_counts(normalize=True) * 100).round(1).to_dict()
+    n_web = int(web.sum())
+    df.loc[web, "Ciudad_Destino"] = "Sin Ciudad"
+    dec.append({
+        "campo": "Ciudad_Destino",
+        "problema": "variantes (BOG/Bogotá, MED/Medellín) y valor 'Ventas_Web' que no es ciudad",
+        "evidencia": {"n_ventas_web": n_web, "pct": round(n_web / len(df) * 100, 2),
+                      "distribucion_canal_en_web": dist_web, "distribucion_canal_global": dist_glob},
+        "accion": "consolidar variantes; 'Ventas_Web' -> 'Sin Ciudad'",
+        "justificacion": ("la distribución de canal dentro de 'Ventas_Web' (~25% c/u) es igual "
+                          "a la global: NO está correlacionado con un canal, así que no es "
+                          "recuperable como ciudad. Se trata como geo no disponible."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#5",
+    })
 
-    # --- 6. Fecha_Venta: parseo + fechas futuras ---
-    df["Fecha_Venta"] = pd.to_datetime(df["Fecha_Venta"], format="mixed", dayfirst=True)
+    # --- 6. Fecha_Venta: parseo + fechas futuras (hallazgo, se aísla) ---
+    df["Fecha_Venta"] = pd.to_datetime(df["Fecha_Venta"], format="mixed", dayfirst=True, errors="coerce")
+    no_parse = int(df["Fecha_Venta"].isnull().sum())
     df["Fecha_Futura_Invalida"] = df["Fecha_Venta"] > REFERENCE_DATE
-    log["fechas_futuras_marcadas"] = int(df["Fecha_Futura_Invalida"].sum())
+    n_fut = int(df["Fecha_Futura_Invalida"].sum())
+    dec.append({
+        "campo": "Fecha_Venta",
+        "problema": "posibles formatos mixtos y fechas posteriores al corte",
+        "evidencia": {"no_parseables": no_parse, "fechas_futuras": n_fut,
+                      "corte": str(REFERENCE_DATE.date()),
+                      "max_fecha": str(df["Fecha_Venta"].max().date())},
+        "accion": "parsear DD/MM/AAAA; marcar 'Fecha_Futura_Invalida', excluir de series de tiempo",
+        "justificacion": ("formato en realidad único (0 no parseables). Las futuras se aíslan, "
+                          "no se borran, para conservar el resto de la transacción."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#6",
+    })
 
-    # --- 7. SKU huérfano / Venta Fantasma ---
+    # --- 7. SKU huérfano / Venta Fantasma (hallazgo central, se aísla) ---
     df["Es_Venta_Fantasma"] = ~df["SKU_ID"].isin(sku_maestro)
-    log["ventas_fantasma_detectadas"] = int(df["Es_Venta_Fantasma"].sum())
-    log["skus_fantasma_distintos"] = int(df.loc[df["Es_Venta_Fantasma"], "SKU_ID"].nunique())
+    orf = df["Es_Venta_Fantasma"]
+    rep = df.loc[orf, "SKU_ID"].value_counts()
+    dec.append({
+        "campo": "SKU_ID",
+        "problema": "SKUs vendidos que no existen en el inventario maestro (Venta Fantasma)",
+        "evidencia": {"n_huerfanas": int(orf.sum()), "pct": round(orf.mean() * 100, 2),
+                      "skus_distintos": int(df.loc[orf, "SKU_ID"].nunique()),
+                      "repeticiones_media": round(float(rep.mean()), 2) if len(rep) else 0,
+                      "repeticiones_max": int(rep.max()) if len(rep) else 0},
+        "accion": "marcar 'Es_Venta_Fantasma'; conservar vía LEFT JOIN (Fase 2) para cuantificar impacto",
+        "justificacion": ("muchos SKUs distintos con recurrencia orgánica y baja (media ~3.6, "
+                          "máx 10): patrón de FALLA DE CATÁLOGO (productos nuevos sin registrar), "
+                          "no de fraude (que se concentraría en pocos códigos)."),
+        "_fuente": "cleaning_transacciones.clean_transacciones#7",
+    })
 
-    # --- Duplicados ---
-    log["duplicados_fila_completa"] = int(df.duplicated().sum())
-    log["duplicados_transaccion_id"] = int(df["Transaccion_ID"].duplicated().sum())
+    return df, dec
 
-    return df, log
+
+def integridad_transacciones(clean: pd.DataFrame) -> dict:
+    n = len(clean)
+    def pct(x): return round(x / n * 100, 2)
+    return {
+        "ventas_fantasma": {"n": int(clean["Es_Venta_Fantasma"].sum()),
+                            "pct": pct(int(clean["Es_Venta_Fantasma"].sum()))},
+        "sin_ciudad_ventas_web": {"n": int((clean["Ciudad_Destino"] == "Sin Ciudad").sum()),
+                                  "pct": pct(int((clean["Ciudad_Destino"] == "Sin Ciudad").sum()))},
+        "estado_sin_informacion": {"n": int((clean["Estado_Envio"] == "Sin Información").sum()),
+                                   "pct": pct(int((clean["Estado_Envio"] == "Sin Información").sum()))},
+        "fechas_futuras": {"n": int(clean["Fecha_Futura_Invalida"].sum()),
+                           "pct": pct(int(clean["Fecha_Futura_Invalida"].sum()))},
+    }
+
+
+# Reglas de validez: SOLO defectos de dato (centinelas). NO incluye hallazgos.
+REGLAS_VALIDEZ = {
+    "cantidad_no_positiva": lambda d: d["Cantidad_Vendida"] <= 0,
+    "tiempo_centinela_999": lambda d: d["Tiempo_Entrega_Real"] == 999,
+}
