@@ -202,7 +202,14 @@ def render(df: pd.DataFrame):
                 stat_n, p_n = sci.shapiro(margen_vals[:5000])
                 test_norm = f"Shapiro-Wilk W={stat_n:.4f}, p={p_n:.4f}"
             else:
-                stat_n, p_n = sci.kstest(margen_vals, "norm",
+                # Se pasa sci.norm.cdf explícitamente en vez del string "norm":
+                # desde scipy 1.18 el string se resuelve internamente a
+                # special.ndtr (CDF normal estándar, ruta rápida nueva) que NO
+                # acepta loc/scale, así que kstest(x, "norm", args=(loc, scale))
+                # revienta con "TypeError: ndtr() takes from 1 to 2 positional
+                # arguments but 3 were given". norm.cdf(x, loc, scale) sí los
+                # acepta y funciona igual en versiones viejas y nuevas de scipy.
+                stat_n, p_n = sci.kstest(margen_vals, sci.norm.cdf,
                                           args=(media, margen_vals.std()))
                 test_norm = f"KS stat={stat_n:.4f}, p={p_n:.4f}"
 
