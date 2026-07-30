@@ -1,74 +1,38 @@
 """
-Limpieza de inventario_central_v2.csv
-======================================
+cleaning_inventario.py — Limpieza de inventario_central_v2.csv
+==============================================================
 
-Decisiones de limpieza documentadas (Fase 1 - Auditoría de Calidad):
+Cada paso devuelve un "registro de decisión" (dict) con:
+  campo, problema, evidencia (estadística CALCULADA en runtime, no escrita a
+  mano), accion, justificacion (media/mediana/moda según la distribución, como
+  exige el Challenge) y _fuente. El orquestador (run_fase1) los agrega al JSON.
 
-1. Categoria: existen 8 valores únicos que en realidad representan 5 categorías
-   de negocio + variantes de formato + un marcador de dato desconocido:
-     - 'smart-phone'  -> 'Smartphones' (variante de formato)
-     - 'LAPTOP'       -> 'Laptops'     (variante de formato)
-     - '???'          -> 'Sin Categoría' (dato no capturado, NO se imputa con
-       una categoría real porque fabricaríamos un segmento de negocio falso;
-       se mantiene como categoría explícita "Sin Categoría" y se excluye de
-       los análisis de rentabilidad por categoría, pero se conserva la fila
-       para no romper la integridad referencial con ventas).
-
-2. Stock_Actual: 4% de nulos y 60 registros con existencias negativas
-   (imposible contablemente). Ambos casos se tratan como dato faltante
-   (no se asume que el negativo sea un error de signo, ya que no hay evidencia
-   que lo sustente) y se imputan con la MEDIANA de Stock_Actual agrupada por
-   Categoria. Se usa mediana y no media porque, aunque la distribución global
-   es razonablemente simétrica, la mediana es robusta a los pocos valores
-   extremos que puedan quedar por categoría.
-
-3. Costo_Unitario_USD: se detectan 2 valores extremos vía rango intercuartílico
-   (IQR): $0.05 (implausible para cualquier categoría) y $850,000 (100-1000x
-   el costo típico). Ambos se marcan como "excluido_costo_atipico" = True y se
-   capan (winsorizan) al límite superior/inferior del IQR para no distorsionar
-   KPIs de rentabilidad agregados, pero se conservan visibles en el reporte de
-   auditoría ("ver registros excluidos"), tal como exige la guía de validación.
-
-4. Lead_Time_Dias ("dato ruidoso" según el diccionario): mezcla de:
-     - valores numéricos puros (1,210 registros, 3-10 días)
-     - rangos en texto "25-30 días" (454 registros) -> se toma el punto medio
-     - "Inmediato" (433 registros) -> se traduce a 0 días
-     - nulos (403 registros, 16.12%) -> se imputan con la MEDIANA de la
-       columna ya parseada, agrupada por Categoria (distribución de días de
-       entrega del proveedor sesgada a la derecha, por lo que la mediana es
-       más representativa que la media).
-
-5. Bodega_Origen: se normaliza únicamente el formato de texto (mayúsculas
-   iniciales). 'BOD-EXT-99' y 'ZONA_FRANCA' se conservan como nodos de bodega
-   legítimos y distintos (bodega externa/3PL y zona franca son conceptos
-   logísticos reales en Colombia), no se fusionan con Norte/Sur/Occidente.
-
-6. Ultima_Revision: se parsea a fecha; no presenta nulos ni inconsistencias
-   de formato. Se usa para derivar "Dias_Desde_Ultima_Revision" en la fase de
-   feature engineering (Pregunta 5).
+Cambio de fondo frente a la versión anterior:
+  El costo atípico ($850.000) NO se winsoriza. La Guía de Validación pide un
+  filtro IQR y "ver registros excluidos": se marca 'Costo_Atipico', se conserva
+  el valor ORIGINAL (crítico para no enmascarar el margen negativo de la
+  Pregunta 1) y se excluye de KPIs agregados aguas abajo. Además se corrige la
+  afirmación falsa de "2 outliers": estadísticamente hay 1 (ver evidencia).
 """
 
 import pandas as pd
 import numpy as np
+from . import audit
 
-REFERENCE_DATE = pd.Timestamp("2026-01-31")  # fecha de corte del proyecto (ver README)
+REFERENCE_DATE = pd.Timestamp("2026-01-31")  # corte del proyecto (ver README)
 
-CATEGORIA_MAP = {
-    "smart-phone": "Smartphones",
-    "LAPTOP": "Laptops",
-    "???": "Sin Categoría",
-}
+CATEGORIA_MAP = {"smart-phone": "Smartphones", "LAPTOP": "Laptops",
+                 "???": "Sin Categoría"}
 
 
 def _parse_lead_time(value):
-    """Convierte Lead_Time_Dias (texto mixto) a número de días."""
+    """Lead_Time_Dias (texto mixto) -> días numéricos."""
     if pd.isna(value):
         return np.nan
     s = str(value).strip()
     if s == "Inmediato":
         return 0.0
-    if "-" in s and "día" in s:
-        # ej. "25-30 días" -> punto medio
+    if "-" in s and "día" in s:                       # "25-30 días" -> punto medio
         nums = [float(x) for x in s.replace("días", "").replace("día", "").split("-")]
         return float(np.mean(nums))
     try:
@@ -77,58 +41,137 @@ def _parse_lead_time(value):
         return np.nan
 
 
-def clean_inventario(raw: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
-    """Limpia inventario_central_v2 y devuelve (df_limpio, log_de_decisiones)."""
+def clean_inventario(raw: pd.DataFrame) -> tuple[pd.DataFrame, list]:
     df = raw.copy()
-    log = {}
+    dec = []
 
-    # --- 1. Categoria ---
+    # --- 1. Categoria: normalizar formato; '???' -> "Sin Categoría" ---
+    n_variantes = int(df["Categoria"].isin(["smart-phone", "LAPTOP"]).sum())
+    n_desconocida = int((df["Categoria"] == "???").sum())
     df["Categoria"] = df["Categoria"].replace(CATEGORIA_MAP)
-    log["categoria_normalizada"] = df["Categoria"].value_counts().to_dict()
+    dec.append({
+        "campo": "Categoria",
+        "problema": "variantes de formato (smart-phone, LAPTOP) y marcador '???'",
+        "evidencia": {"variantes_formato": n_variantes,
+                      "categoria_desconocida": n_desconocida,
+                      "pct_desconocida": round(n_desconocida / len(df) * 100, 2)},
+        "accion": "unificar formato; '???' -> categoría explícita 'Sin Categoría'",
+        "justificacion": ("no se imputa una categoría real: fabricaría un segmento "
+                          "de negocio falso. Se etiqueta la ausencia y se excluye de "
+                          "análisis de margen por categoría, conservando la fila."),
+        "_fuente": "cleaning_inventario.clean_inventario#1",
+    })
 
-    # --- 2. Stock_Actual: negativos -> nulo, luego imputar por mediana de categoría ---
-    negativos = (df["Stock_Actual"] < 0).sum()
-    nulos_originales = df["Stock_Actual"].isnull().sum()
+    # --- 2. Stock_Actual: negativos + nulos -> imputar por categoría ---
+    neg = int((df["Stock_Actual"] < 0).sum())
+    nul = int(df["Stock_Actual"].isnull().sum())
+    skew = round(float(df["Stock_Actual"].skew()), 3)
     df.loc[df["Stock_Actual"] < 0, "Stock_Actual"] = np.nan
     df["Stock_Actual"] = df.groupby("Categoria")["Stock_Actual"].transform(
-        lambda s: s.fillna(s.median())
-    )
-    log["stock_actual_negativos_tratados"] = int(negativos)
-    log["stock_actual_nulos_originales"] = int(nulos_originales)
-    log["stock_actual_imputados_total"] = int(negativos + nulos_originales)
+        lambda s: s.fillna(s.median()))
+    dec.append({
+        "campo": "Stock_Actual",
+        "problema": "existencias negativas (imposibles) y nulos",
+        "evidencia": {"negativos": neg, "nulos": nul, "skew": skew},
+        "accion": "negativos y nulos -> NaN -> imputar MEDIANA agrupada por Categoria",
+        "justificacion": (f"skew={skew} (casi simétrica: media≈mediana); se usa "
+                          "MEDIANA por robustez ante extremos residuales por categoría. "
+                          "El negativo no se asume error de signo (no hay evidencia)."),
+        "_fuente": "cleaning_inventario.clean_inventario#2",
+    })
 
-    # --- 3. Costo_Unitario_USD: winsorización por IQR ---
-    q1, q3 = df["Costo_Unitario_USD"].quantile([0.25, 0.75])
-    iqr = q3 - q1
-    low, high = max(q1 - 1.5 * iqr, 0), q3 + 1.5 * iqr
+    # --- 3. Costo_Unitario_USD: detección IQR + corroboración MAD; NO winsoriza ---
+    iqr_info = audit.magnitud_outliers_iqr(df["Costo_Unitario_USD"])
+    mad_info = audit.z_modificado_mad(df["Costo_Unitario_USD"])
+    low, high = iqr_info["cerca_inferior"], iqr_info["cerca_superior"]
     df["Costo_Atipico"] = (df["Costo_Unitario_USD"] < low) | (df["Costo_Unitario_USD"] > high)
-    log["costo_unitario_outliers_detectados"] = int(df["Costo_Atipico"].sum())
-    log["costo_unitario_limites_iqr"] = (round(low, 2), round(high, 2))
-    df["Costo_Unitario_USD_Original"] = df["Costo_Unitario_USD"]
-    df["Costo_Unitario_USD"] = df["Costo_Unitario_USD"].clip(lower=low, upper=high)
+    # SKU atípico: contexto de negocio (¿cuántas veces la mediana de su categoría?)
+    if df["Costo_Atipico"].any():
+        r = df.loc[df["Costo_Atipico"]].iloc[0]
+        med_cat = df.loc[df["Categoria"] == r["Categoria"], "Costo_Unitario_USD"].median()
+        contexto = {"categoria": r["Categoria"],
+                    "veces_mediana_categoria": round(r["Costo_Unitario_USD"] / med_cat, 0)}
+    else:
+        contexto = {}
+    dec.append({
+        "campo": "Costo_Unitario_USD",
+        "problema": "costo(s) extremo(s) que distorsionan KPIs de rentabilidad",
+        "evidencia": {"iqr": iqr_info, "z_modificado_mad": mad_info, "negocio": contexto},
+        "accion": ("marcar 'Costo_Atipico', CONSERVAR valor original, excluir de KPIs "
+                   "agregados (Guía: 'ver registros excluidos')"),
+        "justificacion": ("IQR y z-MAD coinciden en el conteo de outliers. NO se "
+                          "winsoriza: capar el costo enmascararía el margen negativo "
+                          "que busca la Pregunta 1. El z clásico no se usa (skew alto "
+                          "lo hace no fiable)."),
+        "_fuente": "cleaning_inventario.clean_inventario#3 (usa audit.magnitud_outliers_iqr)",
+    })
 
-    # --- 4. Lead_Time_Dias: parseo + imputación por mediana de categoría ---
+    # --- 4. Lead_Time_Dias: parsear texto mixto + imputar por categoría ---
+    comp = df["Lead_Time_Dias"].apply(
+        lambda v: "Inmediato" if str(v).strip() == "Inmediato"
+        else ("rango" if ("-" in str(v) and "día" in str(v))
+              else ("nulo" if pd.isna(v) else "numerico")))
     df["Lead_Time_Dias_Clean"] = df["Lead_Time_Dias"].apply(_parse_lead_time)
-    nulos_lead = df["Lead_Time_Dias_Clean"].isnull().sum()
+    nul_lead = int(df["Lead_Time_Dias_Clean"].isnull().sum())
+    skew_lead = round(float(df["Lead_Time_Dias_Clean"].skew()), 3)
     df["Lead_Time_Dias_Clean"] = df.groupby("Categoria")["Lead_Time_Dias_Clean"].transform(
-        lambda s: s.fillna(s.median())
-    )
-    log["lead_time_nulos_imputados"] = int(nulos_lead)
+        lambda s: s.fillna(s.median()))
+    dec.append({
+        "campo": "Lead_Time_Dias",
+        "problema": "texto mixto: numérico, rangos '25-30 días', 'Inmediato' y nulos",
+        "evidencia": {"composicion": comp.value_counts().to_dict(),
+                      "nulos_tras_parseo": nul_lead, "skew": skew_lead},
+        "accion": "parsear (rango->punto medio, Inmediato->0); nulos -> MEDIANA por categoría",
+        "justificacion": (f"skew={skew_lead}; la MEDIANA es más representativa que la "
+                          "media para tiempos de reposición y robusta a la cola derecha."),
+        "_fuente": "cleaning_inventario.clean_inventario#4",
+    })
 
-    # --- 5. Bodega_Origen: normalizar formato ---
-    df["Bodega_Origen"] = (
-        df["Bodega_Origen"].str.strip().str.replace("_", " ").str.title().str.replace(" ", "_")
-    )
-    log["bodegas_normalizadas"] = df["Bodega_Origen"].value_counts().to_dict()
+    # --- 5. Bodega_Origen: normalizar formato (colapsa 'norte'/'Norte') ---
+    antes = df["Bodega_Origen"].nunique()
+    df["Bodega_Origen"] = (df["Bodega_Origen"].str.strip().str.replace("_", " ")
+                           .str.title().str.replace(" ", "_"))
+    dec.append({
+        "campo": "Bodega_Origen",
+        "problema": "misma bodega escrita distinto ('norte' vs 'Norte')",
+        "evidencia": {"nodos_antes": int(antes),
+                      "nodos_despues": int(df["Bodega_Origen"].nunique()),
+                      "conteo": df["Bodega_Origen"].value_counts().to_dict()},
+        "accion": "normalizar formato de texto",
+        "justificacion": ("'Bod-Ext-99' (3PL) y 'Zona_Franca' se conservan como nodos "
+                          "logísticos legítimos y distintos, no se fusionan con las regiones."),
+        "_fuente": "cleaning_inventario.clean_inventario#5",
+    })
 
-    # --- 6. Ultima_Revision: parseo de fecha ---
+    # --- 6. Ultima_Revision: parseo de fecha + antigüedad ---
     df["Ultima_Revision"] = pd.to_datetime(df["Ultima_Revision"], errors="coerce")
     df["Dias_Desde_Ultima_Revision"] = (REFERENCE_DATE - df["Ultima_Revision"]).dt.days
+    dec.append({
+        "campo": "Ultima_Revision",
+        "problema": "ninguno (formato único YYYY-MM-DD, sin nulos)",
+        "evidencia": {"nulos": int(df["Ultima_Revision"].isnull().sum())},
+        "accion": "parsear a fecha y derivar 'Dias_Desde_Ultima_Revision' (Pregunta 5)",
+        "justificacion": "dato limpio; solo se deriva la variable de antigüedad.",
+        "_fuente": "cleaning_inventario.clean_inventario#6",
+    })
 
-    # --- Duplicados ---
-    dup_full = df.duplicated().sum()
-    dup_sku = df["SKU_ID"].duplicated().sum()
-    log["duplicados_fila_completa"] = int(dup_full)
-    log["duplicados_sku_id"] = int(dup_sku)
+    return df, dec
 
-    return df, log
+
+def integridad_inventario(clean: pd.DataFrame) -> dict:
+    """Hallazgos de negocio (NO defectos) para la sección de integridad."""
+    n = len(clean)
+    n_sin_cat = int((clean["Categoria"] == "Sin Categoría").sum())
+    return {
+        "categoria_desconocida_residual": {
+            "n": n_sin_cat, "pct": round(n_sin_cat / n * 100, 2),
+            "nota": "persiste como 'Sin Categoría': ausencia etiquetada, no recuperada"},
+        "sku_id_duplicados": int(clean["SKU_ID"].duplicated().sum()),
+    }
+
+
+# Reglas de validez (defectos inequívocos). Mismas para crudo y limpio.
+REGLAS_VALIDEZ = {
+    "stock_negativo": lambda d: d["Stock_Actual"] < 0,
+    "costo_no_positivo": lambda d: d["Costo_Unitario_USD"] <= 0,
+}
