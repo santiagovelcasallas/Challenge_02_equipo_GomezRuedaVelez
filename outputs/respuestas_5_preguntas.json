@@ -1,351 +1,342 @@
 {
   "pregunta_1_fuga_capital": {
-    "transacciones_con_margen_negativo": 3239,
-    "pct_transacciones_negativas": 39.27,
-    "perdida_total_usd": -11692624.4,
-    "perdida_por_canal": {
+    "cifra_bruta_con_outlier": {
+      "perdida_usd": -35430807.33,
+      "margen_total": -9479245.93,
+      "nota": "incluye PROD-1500 (Costo=$850k, Costo_Atipico=True): $23.7M de los $35.4M"
+    },
+    "cifra_limpia_sin_outlier": {
+      "n_transacciones_analizadas": 8244,
+      "n_margen_negativo": 3234,
+      "pct_margen_negativo": 39.23,
+      "perdida_usd": -11661672.17,
+      "margen_total_periodo_usd": 14289889.23
+    },
+    "por_canal": {
       "App": {
-        "pct_transacciones_negativas": 37.44,
-        "perdida_total_usd": -2689709.78
+        "n_transacciones": 1993.0,
+        "pct_margen_negativo": 37.38,
+        "perdida_usd": -2678809.11,
+        "margen_mediano_usd": 1119.15
       },
       "Físico": {
-        "pct_transacciones_negativas": 41.21,
-        "perdida_total_usd": -3122093.24
+        "n_transacciones": 2070.0,
+        "pct_margen_negativo": 41.21,
+        "perdida_usd": -3122093.24,
+        "margen_mediano_usd": 890.93
       },
       "Online": {
-        "pct_transacciones_negativas": 37.34,
-        "perdida_total_usd": -2827909.28
+        "n_transacciones": 2076.0,
+        "pct_margen_negativo": 37.28,
+        "perdida_usd": -2814191.09,
+        "margen_mediano_usd": 1117.94
       },
       "WhatsApp": {
-        "pct_transacciones_negativas": 40.98,
-        "perdida_total_usd": -3052912.1
+        "n_transacciones": 2105.0,
+        "pct_margen_negativo": 40.95,
+        "perdida_usd": -3046578.73,
+        "margen_mediano_usd": 843.57
       }
     },
-    "top10_skus_mas_perdida": {
+    "test_homogeneidad_canales": {
+      "_metodo": "chi2_contingency (scipy) — ¿la proporción de negativos difiere entre canales?",
+      "chi2": 12.1677,
+      "p_valor": 0.0068,
+      "gl": 3,
+      "conclusion": "SÍ hay diferencia significativa entre canales (p<0.05)"
+    },
+    "top10_skus_mayor_perdida": {
       "PROD-2858": {
-        "sum": -58142.72,
-        "count": 7
+        "perdida_total": -58142.72,
+        "n_transacciones": 7
       },
       "PROD-2609": {
-        "sum": -50553.68,
-        "count": 8
+        "perdida_total": -50553.68,
+        "n_transacciones": 8
       },
       "PROD-3432": {
-        "sum": -45122.4,
-        "count": 8
+        "perdida_total": -45122.4,
+        "n_transacciones": 8
       },
       "PROD-1953": {
-        "sum": -42038.64,
-        "count": 5
+        "perdida_total": -42038.64,
+        "n_transacciones": 5
       },
       "PROD-2295": {
-        "sum": -41711.64,
-        "count": 6
+        "perdida_total": -41711.64,
+        "n_transacciones": 6
       },
       "PROD-2283": {
-        "sum": -41224.71,
-        "count": 6
+        "perdida_total": -41224.71,
+        "n_transacciones": 6
       },
       "PROD-2908": {
-        "sum": -37873.24,
-        "count": 5
+        "perdida_total": -37873.24,
+        "n_transacciones": 5
       },
       "PROD-2672": {
-        "sum": -37131.12,
-        "count": 4
+        "perdida_total": -37131.12,
+        "n_transacciones": 4
       },
       "PROD-1382": {
-        "sum": -36676.8,
-        "count": 4
+        "perdida_total": -36676.8,
+        "n_transacciones": 4
       },
       "PROD-1903": {
-        "sum": -36232.34,
-        "count": 6
+        "perdida_total": -36232.34,
+        "n_transacciones": 6
       }
-    }
+    },
+    "_fuente": "analysis.pregunta_1_fuga_capital",
+    "_advertencia": "El outlier PROD-1500 (Costo_Atipico=True) genera $23.7M de pérdida artificial. El análisis de canal y precios usa siempre la cifra sin outlier."
   },
   "pregunta_2_crisis_logistica": {
-    "correlacion_general_tiempo_vs_nps": 0.003,
-    "zona_mas_critica": {
-      "Ciudad": "Bucaramanga",
-      "Bodega": "Occidente",
-      "n": 55,
-      "correlacion": -0.121
+    "n_filas_analizadas": 3117,
+    "correlacion_global": {
+      "_metodo": "Pearson + Spearman (scipy.stats)",
+      "pearson_r": 0.0032,
+      "pearson_p": 0.8584,
+      "spearman_r": 0.0025,
+      "spearman_p": 0.8899,
+      "conclusion": "Correlación NO significativa (p>0.05): el NPS no depende del tiempo de entrega en el agregado global."
     },
-    "tabla_correlaciones_por_zona": [
+    "correlacion_por_ciudad": [
       {
-        "Ciudad": "Bucaramanga",
-        "Bodega": "Occidente",
-        "n": 55,
-        "correlacion": -0.121
+        "ciudad": "Bucaramanga",
+        "n": 432,
+        "pearson_r": -0.0202,
+        "pearson_p": 0.6761,
+        "spearman_r": -0.0204,
+        "spearman_p": 0.6729,
+        "significativa_p05": false
       },
       {
-        "Ciudad": "Cali",
-        "Bodega": "Sur",
-        "n": 56,
-        "correlacion": -0.107
+        "ciudad": "Bogotá",
+        "n": 934,
+        "pearson_r": -0.0071,
+        "pearson_p": 0.8273,
+        "spearman_r": -0.0077,
+        "spearman_p": 0.8139,
+        "significativa_p05": false
       },
       {
-        "Ciudad": "Cali",
-        "Bodega": "Occidente",
-        "n": 76,
-        "correlacion": -0.105
+        "ciudad": "Cali",
+        "n": 447,
+        "pearson_r": 0.0006,
+        "pearson_p": 0.9903,
+        "spearman_r": -0.0025,
+        "spearman_p": 0.9585,
+        "significativa_p05": false
       },
       {
-        "Ciudad": "Bogotá",
-        "Bodega": "Zona_Franca",
-        "n": 136,
-        "correlacion": -0.097
+        "ciudad": "Medellín",
+        "n": 866,
+        "pearson_r": 0.0153,
+        "pearson_p": 0.6529,
+        "spearman_r": 0.0166,
+        "spearman_p": 0.6261,
+        "significativa_p05": false
       },
       {
-        "Ciudad": "Bucaramanga",
-        "Bodega": "Sur",
-        "n": 61,
-        "correlacion": -0.078
-      },
-      {
-        "Ciudad": "Bucaramanga",
-        "Bodega": "Norte",
-        "n": 123,
-        "correlacion": -0.07
-      },
-      {
-        "Ciudad": "Medellín",
-        "Bodega": "Sur",
-        "n": 138,
-        "correlacion": -0.062
-      },
-      {
-        "Ciudad": "Barranquilla",
-        "Bodega": "Norte",
-        "n": 152,
-        "correlacion": -0.059
-      },
-      {
-        "Ciudad": "Bogotá",
-        "Bodega": "Norte",
-        "n": 253,
-        "correlacion": -0.054
-      },
-      {
-        "Ciudad": "Bogotá",
-        "Bodega": "Bod-Ext-99",
-        "n": 131,
-        "correlacion": -0.035
-      },
-      {
-        "Ciudad": "Medellín",
-        "Bodega": "Sin Bodega",
-        "n": 155,
-        "correlacion": -0.035
-      },
-      {
-        "Ciudad": "Cali",
-        "Bodega": "Zona_Franca",
-        "n": 73,
-        "correlacion": -0.031
-      },
-      {
-        "Ciudad": "Bogotá",
-        "Bodega": "Occidente",
-        "n": 124,
-        "correlacion": -0.009
-      },
-      {
-        "Ciudad": "Medellín",
-        "Bodega": "Zona_Franca",
-        "n": 115,
-        "correlacion": -0.004
-      },
-      {
-        "Ciudad": "Barranquilla",
-        "Bodega": "Bod-Ext-99",
-        "n": 61,
-        "correlacion": 0.018
-      },
-      {
-        "Ciudad": "Cali",
-        "Bodega": "Norte",
-        "n": 110,
-        "correlacion": 0.02
-      },
-      {
-        "Ciudad": "Medellín",
-        "Bodega": "Bod-Ext-99",
-        "n": 115,
-        "correlacion": 0.022
-      },
-      {
-        "Ciudad": "Barranquilla",
-        "Bodega": "Sur",
-        "n": 64,
-        "correlacion": 0.032
-      },
-      {
-        "Ciudad": "Bucaramanga",
-        "Bodega": "Sin Bodega",
-        "n": 82,
-        "correlacion": 0.042
-      },
-      {
-        "Ciudad": "Cali",
-        "Bodega": "Bod-Ext-99",
-        "n": 48,
-        "correlacion": 0.046
-      },
-      {
-        "Ciudad": "Barranquilla",
-        "Bodega": "Occidente",
-        "n": 53,
-        "correlacion": 0.047
-      },
-      {
-        "Ciudad": "Bucaramanga",
-        "Bodega": "Bod-Ext-99",
-        "n": 72,
-        "correlacion": 0.048
-      },
-      {
-        "Ciudad": "Medellín",
-        "Bodega": "Norte",
-        "n": 215,
-        "correlacion": 0.06
-      },
-      {
-        "Ciudad": "Bogotá",
-        "Bodega": "Sur",
-        "n": 135,
-        "correlacion": 0.069
-      },
-      {
-        "Ciudad": "Medellín",
-        "Bodega": "Occidente",
-        "n": 131,
-        "correlacion": 0.084
-      },
-      {
-        "Ciudad": "Barranquilla",
-        "Bodega": "Zona_Franca",
-        "n": 42,
-        "correlacion": 0.101
-      },
-      {
-        "Ciudad": "Bogotá",
-        "Bodega": "Sin Bodega",
-        "n": 158,
-        "correlacion": 0.109
-      },
-      {
-        "Ciudad": "Cali",
-        "Bodega": "Sin Bodega",
-        "n": 86,
-        "correlacion": 0.132
-      },
-      {
-        "Ciudad": "Bucaramanga",
-        "Bodega": "Zona_Franca",
-        "n": 41,
-        "correlacion": 0.142
-      },
-      {
-        "Ciudad": "Barranquilla",
-        "Bodega": "Sin Bodega",
-        "n": 67,
-        "correlacion": 0.173
+        "ciudad": "Barranquilla",
+        "n": 438,
+        "pearson_r": 0.0348,
+        "pearson_p": 0.4677,
+        "spearman_r": 0.0392,
+        "spearman_p": 0.4128,
+        "significativa_p05": false
       }
-    ]
+    ],
+    "resumen_por_bodega": [
+      {
+        "Bodega_Origen": "Bod-Ext-99",
+        "n": 426,
+        "tiempo_entrega_prom": 15.291,
+        "nps_prom": 4.908,
+        "tasa_retrasado": 19.484
+      },
+      {
+        "Bodega_Origen": "Norte",
+        "n": 849,
+        "tiempo_entrega_prom": 14.912,
+        "nps_prom": -1.061,
+        "tasa_retrasado": 17.079
+      },
+      {
+        "Bodega_Origen": "Occidente",
+        "n": 436,
+        "tiempo_entrega_prom": 14.631,
+        "nps_prom": -0.8,
+        "tasa_retrasado": 13.991
+      },
+      {
+        "Bodega_Origen": "Sin Bodega",
+        "n": 547,
+        "tiempo_entrega_prom": 14.892,
+        "nps_prom": 1.156,
+        "tasa_retrasado": 15.539
+      },
+      {
+        "Bodega_Origen": "Sur",
+        "n": 453,
+        "tiempo_entrega_prom": 14.779,
+        "nps_prom": 2.311,
+        "tasa_retrasado": 19.426
+      },
+      {
+        "Bodega_Origen": "Zona_Franca",
+        "n": 406,
+        "tiempo_entrega_prom": 14.764,
+        "nps_prom": -2.962,
+        "tasa_retrasado": 24.631
+      }
+    ],
+    "zona_mas_critica": {
+      "ciudad": "Bucaramanga",
+      "n": 432,
+      "pearson_r": -0.0202,
+      "pearson_p": 0.6761,
+      "spearman_r": -0.0204,
+      "spearman_p": 0.6729,
+      "significativa_p05": false
+    },
+    "_fuente": "analysis.pregunta_2_crisis_logistica",
+    "_advertencia": "Correlación global r≈0 (NS): no hay efecto lineal global tiempo→NPS. Revisar segmentación por bodega para hallar cuellos de botella operativos específicos."
   },
   "pregunta_3_venta_invisible": {
     "ingreso_total_usd": 75251241.66,
     "ingreso_en_riesgo_usd": 13131809.08,
     "pct_ingreso_en_riesgo": 17.45,
+    "ic_95_bootstrap_pct": [
+      16.76,
+      18.22
+    ],
     "transacciones_fantasma": 1751,
-    "pct_transacciones_fantasma": 17.51,
-    "skus_fantasma_distintos": 480
+    "pct_transacciones": 17.51,
+    "skus_distintos_sin_catalogo": 480,
+    "repeticiones_por_sku": {
+      "media": 3.65,
+      "mediana": 3.0,
+      "max": 10
+    },
+    "_metodo": "Bootstrap IC 95% (n=1000) para el % de transacciones fantasma",
+    "_fuente": "analysis.pregunta_3_venta_invisible"
   },
   "pregunta_4_diagnostico_fidelidad": {
     "resumen_por_categoria": {
       "Accesorios": {
-        "Stock_Promedio": 1004.15,
-        "NPS_Promedio": 0.83,
-        "Rating_Producto_Promedio": 2.98,
-        "Margen_Promedio_USD": 1542.92
+        "n_transacciones": 1031.0,
+        "stock_promedio": 1004.2,
+        "nps_promedio": 0.83,
+        "rating_promedio": 2.98,
+        "margen_prom_con_outlier": 1542.92,
+        "margen_prom_sin_outlier": 1542.92
       },
       "Laptops": {
-        "Stock_Promedio": 995.23,
-        "NPS_Promedio": 2.35,
-        "Rating_Producto_Promedio": 2.98,
-        "Margen_Promedio_USD": 1831.77
+        "n_transacciones": 2048.0,
+        "stock_promedio": 995.2,
+        "nps_promedio": 2.35,
+        "rating_promedio": 2.98,
+        "margen_prom_con_outlier": 1831.77,
+        "margen_prom_sin_outlier": 1831.77
       },
       "Monitores": {
-        "Stock_Promedio": 987.68,
-        "NPS_Promedio": 0.05,
-        "Rating_Producto_Promedio": 2.97,
-        "Margen_Promedio_USD": 1903.85
-      },
-      "Sin Categoría": {
-        "Stock_Promedio": 1008.54,
-        "NPS_Promedio": -2.09,
-        "Rating_Producto_Promedio": 3.06,
-        "Margen_Promedio_USD": 1569.45
+        "n_transacciones": 1042.0,
+        "stock_promedio": 987.7,
+        "nps_promedio": 0.05,
+        "rating_promedio": 2.97,
+        "margen_prom_con_outlier": 1903.85,
+        "margen_prom_sin_outlier": 1903.85
       },
       "Smartphones": {
-        "Stock_Promedio": 1045.43,
-        "NPS_Promedio": -4.22,
-        "Rating_Producto_Promedio": 2.98,
-        "Margen_Promedio_USD": 1508.68
+        "n_transacciones": 2067.0,
+        "stock_promedio": 1045.4,
+        "nps_promedio": -4.22,
+        "rating_promedio": 2.98,
+        "margen_prom_con_outlier": -9975.69,
+        "margen_prom_sin_outlier": 1527.35
       },
       "Tablets": {
-        "Stock_Promedio": 1030.31,
-        "NPS_Promedio": 3.96,
-        "Rating_Producto_Promedio": 3.02,
-        "Margen_Promedio_USD": 2139.03
+        "n_transacciones": 1018.0,
+        "stock_promedio": 1030.3,
+        "nps_promedio": 3.96,
+        "rating_promedio": 3.02,
+        "margen_prom_con_outlier": 2139.03,
+        "margen_prom_sin_outlier": 2139.03
       }
     },
-    "categorias_paradoja_stock_alto_nps_bajo": {
-      "Sin Categoría": {
-        "Stock_Promedio": 1008.54,
-        "NPS_Promedio": -2.09,
-        "Rating_Producto_Promedio": 3.06,
-        "Margen_Promedio_USD": 1569.45
-      },
-      "Smartphones": {
-        "Stock_Promedio": 1045.43,
-        "NPS_Promedio": -4.22,
-        "Rating_Producto_Promedio": 2.98,
-        "Margen_Promedio_USD": 1508.68
-      }
-    }
+    "umbral_stock_mediana": 1004.2,
+    "umbral_nps_mediana": 0.83,
+    "categorias_paradoja": [
+      "Smartphones"
+    ],
+    "test_diferencia_nps_entre_categorias": {
+      "_metodo": "Kruskal-Wallis (no paramétrico, no asume normalidad)",
+      "H_stat": 7.452,
+      "p_valor": 0.1138,
+      "conclusion": "No hay diferencia significativa de NPS entre categorías (p>0.05)"
+    },
+    "_fuente": "analysis.pregunta_4_diagnostico_fidelidad",
+    "_advertencia": "Smartphones tiene margen_prom=-$9.976 con outlier vs +$1.527 sin él. El NPS bajo (-4) en Smartphones es independiente del outlier de costo: apunta a problema de producto/calidad, no de precio."
   },
   "pregunta_5_riesgo_operativo": {
-    "resumen_por_bodega": {
-      "Bod-Ext-99": {
-        "Dias_Desde_Revision_Promedio": 355.72,
-        "Tasa_Ticket_Soporte": 20.1,
-        "N_Transacciones": 1393
+    "resumen_por_bodega": [
+      {
+        "Bodega_Origen": "Bod-Ext-99",
+        "n_transacciones": 1393,
+        "dias_desde_revision_prom": 355.72,
+        "tasa_ticket_pct": 20.1,
+        "nps_prom": 3.86,
+        "tasa_retrasado_pct": 18.16,
+        "brecha_entrega_prom": 6.14
       },
-      "Norte": {
-        "Dias_Desde_Revision_Promedio": 344.575,
-        "Tasa_Ticket_Soporte": 20.61,
-        "N_Transacciones": 2785
+      {
+        "Bodega_Origen": "Norte",
+        "n_transacciones": 2785,
+        "dias_desde_revision_prom": 344.58,
+        "tasa_ticket_pct": 20.61,
+        "nps_prom": -1.66,
+        "tasa_retrasado_pct": 16.3,
+        "brecha_entrega_prom": 6.12
       },
-      "Occidente": {
-        "Dias_Desde_Revision_Promedio": 356.114,
-        "Tasa_Ticket_Soporte": 22.02,
-        "N_Transacciones": 1276
+      {
+        "Bodega_Origen": "Occidente",
+        "n_transacciones": 1276,
+        "dias_desde_revision_prom": 356.11,
+        "tasa_ticket_pct": 22.02,
+        "nps_prom": -0.69,
+        "tasa_retrasado_pct": 16.14,
+        "brecha_entrega_prom": 6.05
       },
-      "Sur": {
-        "Dias_Desde_Revision_Promedio": 329.791,
-        "Tasa_Ticket_Soporte": 19.72,
-        "N_Transacciones": 1476
+      {
+        "Bodega_Origen": "Sur",
+        "n_transacciones": 1476,
+        "dias_desde_revision_prom": 329.79,
+        "tasa_ticket_pct": 19.72,
+        "nps_prom": 1.13,
+        "tasa_retrasado_pct": 17.41,
+        "brecha_entrega_prom": 6.57
       },
-      "Zona_Franca": {
-        "Dias_Desde_Revision_Promedio": 347.147,
-        "Tasa_Ticket_Soporte": 20.7,
-        "N_Transacciones": 1319
+      {
+        "Bodega_Origen": "Zona_Franca",
+        "n_transacciones": 1319,
+        "dias_desde_revision_prom": 347.15,
+        "tasa_ticket_pct": 20.7,
+        "nps_prom": -1.97,
+        "tasa_retrasado_pct": 21.23,
+        "brecha_entrega_prom": 6.78
       }
+    ],
+    "bodega_mas_desactualizada": "Occidente",
+    "bodega_mayor_tasa_ticket": "Occidente",
+    "correlacion_antiguedad_vs_tickets": {
+      "_metodo": "Pearson (scipy.stats.pearsonr)",
+      "r": 0.6344,
+      "p_valor": 0.2503,
+      "n_bodegas": 5,
+      "conclusion": "r=0.634, p=0.250: correlación positiva pero NO significativa con n=5 bodegas. Dirección es indicativa, no conclusiva."
     },
-    "correlacion_antiguedad_vs_tickets": 0.634,
-    "bodega_mas_desactualizada": "Occidente"
+    "_fuente": "analysis.pregunta_5_riesgo_operativo",
+    "_advertencia": "n=5 bodegas: la correlación de Pearson no alcanza significancia estadística. El patrón es descriptivo; requeriría datos a nivel SKU-bodega para un test robusto."
   }
 }
