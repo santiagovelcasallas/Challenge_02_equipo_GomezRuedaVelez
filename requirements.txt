@@ -5,3 +5,4 @@ scipy>=1.11
 streamlit>=1.38
 plotly>=5.22
 groq>=0.11
+seaborn>=0.13
