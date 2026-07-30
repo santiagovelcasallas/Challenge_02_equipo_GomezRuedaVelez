@@ -2,33 +2,33 @@
   "antes": {
     "inventario": {
       "n_registros": 2500,
-      "completitud": 89.94,
-      "validez": 85.72,
+      "completitud": 97.48,
+      "validez": 97.6,
       "unicidad": 100.0,
-      "health_score": 91.89
+      "health_score": 98.36
     },
     "transacciones": {
       "n_registros": 10000,
-      "completitud": 87.42,
-      "validez": 71.02,
+      "completitud": 97.48,
+      "validez": 99.0,
       "unicidad": 100.0,
-      "health_score": 86.14
+      "health_score": 98.83
     },
     "feedback": {
       "n_registros": 4500,
-      "completitud": 80.27,
+      "completitud": 95.61,
       "validez": 99.0,
-      "unicidad": 88.89,
-      "health_score": 89.39
+      "unicidad": 100.0,
+      "health_score": 98.2
     }
   },
   "despues": {
     "inventario": {
       "n_registros": 2500,
-      "completitud": 100.0,
+      "completitud": 97.98,
       "validez": 100.0,
       "unicidad": 100.0,
-      "health_score": 100.0
+      "health_score": 99.33
     },
     "transacciones": {
       "n_registros": 10000,
