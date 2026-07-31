@@ -50,8 +50,14 @@ def _tabla(filas):
 def p1_drawer(df_c):
     """Argumento matemático P1: Kruskal vs ANOVA vs Chi²."""
     canales = sorted(df_c["Canal_Venta"].unique())
-    grupos  = [df_c[df_c["Canal_Venta"]==c]["Margen_Utilidad_USD"].dropna().values
-               for c in canales]
+    grupos_dict = {c: df_c[df_c["Canal_Venta"]==c]["Margen_Utilidad_USD"].dropna().values
+                   for c in canales}
+    canales = [c for c in canales if len(grupos_dict[c]) >= 3]
+    grupos  = [grupos_dict[c] for c in canales]
+
+    if len(grupos) < 2:
+        st.info("Se necesitan al menos 2 canales con datos suficientes para el cajón estadístico.")
+        return
 
     # Shapiro por canal
     shapiro = {}
@@ -65,18 +71,19 @@ def p1_drawer(df_c):
 
     L, pL   = sci.levene(*grupos)
     H, pH   = sci.kruskal(*grupos)
-    cont    = df_c.groupby("Canal_Venta").apply(
+    cont    = df_c[df_c["Canal_Venta"].isin(canales)].groupby("Canal_Venta").apply(
         lambda g: pd.Series({"neg":(g["Margen_Utilidad_USD"]<0).sum(),
                              "pos":(g["Margen_Utilidad_USD"]>=0).sum()}),
         include_groups=False)
     chi2, pchi2, dof, _ = sci.chi2_contingency(cont.values)
 
-    online = df_c[df_c["Canal_Venta"]=="Online"]["Margen_Utilidad_USD"].dropna().values
+    online = grupos_dict.get("Online", np.array([]))
     mw = {}
-    for c, v in zip(canales, grupos):
-        if c == "Online": continue
-        U, p_mw = sci.mannwhitneyu(online, v, alternative="two-sided")
-        mw[c] = round(float(p_mw), 4)
+    if len(online) > 0:
+        for c, v in zip(canales, grupos):
+            if c == "Online": continue
+            U, p_mw = sci.mannwhitneyu(online, v, alternative="two-sided")
+            mw[c] = round(float(p_mw), 4)
 
     with st.expander("📐 Argumento matemático — selección y descarte de pruebas estadísticas"):
 
@@ -179,14 +186,16 @@ def p2_drawer(df_geo, pr_g, pp_g, sr_g, sp_g, df_corr):
     nps_vals= df_geo["Satisfaccion_NPS_Prom"].values
     n2      = len(df_geo)
 
-    Wt, pt = sci.shapiro(t_vals[:500])
-    Wn, pn = sci.shapiro(nps_vals[:500])
+    n_shap = min(500, len(t_vals))
+    Wt, pt = sci.shapiro(t_vals[:n_shap]) if n_shap >= 3 else (float('nan'), 1.0)
+    Wn, pn = sci.shapiro(nps_vals[:n_shap]) if n_shap >= 3 else (float('nan'), 1.0)
     skt, kut = sci.skew(t_vals), sci.kurtosis(t_vals)
     skn, kun = sci.skew(nps_vals), sci.kurtosis(nps_vals)
 
     slope, intercept, _, _, _ = sci.linregress(t_vals, nps_vals)
     residuos = nps_vals - (slope*t_vals + intercept)
-    Wr, pr_res = sci.shapiro(residuos[:500])
+    n_res = min(500, len(residuos))
+    Wr, pr_res = sci.shapiro(residuos[:n_res]) if n_res >= 3 else (float('nan'), 1.0)
 
     z_a = N.ppf(0.975)
     potencias = {}
@@ -383,7 +392,12 @@ def p4_drawer(df_cat, resumen4, H_kw, p_kw, cats_paradoja):
     """Argumento matemático P4: Kruskal vs ANOVA, con Levene."""
     CATS = list(resumen4.index)
     grupos = [df_cat.loc[df_cat["Categoria"]==c,"Satisfaccion_NPS_Prom"].dropna().values
-              for c in CATS]
+              for c in CATS if len(df_cat[df_cat["Categoria"]==c])>0]
+    CATS = [c for c in CATS if len(df_cat[df_cat["Categoria"]==c])>0]
+
+    if len(grupos) < 2:
+        st.info("Se necesitan al menos 2 categorías con datos para el cajón estadístico.")
+        return
 
     shapiro_c, kurt_c = {}, {}
     for c, v in zip(CATS, grupos):
@@ -391,7 +405,7 @@ def p4_drawer(df_cat, resumen4, H_kw, p_kw, cats_paradoja):
         shapiro_c[c] = (round(float(W),4), float(p), round(sci.skew(v),3), round(sci.kurtosis(v),3))
         kurt_c[c] = round(sci.kurtosis(v),3)
 
-    L, pL = sci.levene(*[g for g in grupos if len(g)>0])
+    L, pL = sci.levene(*grupos) if len(grupos) >= 2 else (float('nan'), 1.0)
 
     with st.expander("📐 Argumento matemático — Kruskal vs ANOVA y por qué no transformar"):
 
