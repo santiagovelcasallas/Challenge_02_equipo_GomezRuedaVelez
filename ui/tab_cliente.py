@@ -73,8 +73,12 @@ def render(df: pd.DataFrame):
                 "Spearman ρ":round(rs,4),"Spearman p":round(ps,4),
                 "Significativa":("✅ Sí" if (pp<0.05 or ps<0.05) else "❌ No"),
             })
-        df_corr = pd.DataFrame(corr_ciudad).sort_values("Pearson r")
-        ninguna_sig = (df_corr["Significativa"]=="❌ No").all() if len(df_corr) else True
+        df_corr = pd.DataFrame(corr_ciudad)
+        if df_corr.empty or "Pearson r" not in df_corr.columns:
+            st.info("Ninguna ciudad tiene suficientes registros (n≥30) con los filtros aplicados para calcular correlaciones.")
+            return
+        df_corr = df_corr.sort_values("Pearson r")
+        ninguna_sig = (df_corr["Significativa"]=="❌ No").all()
 
         if len(df_corr):
             fig2 = go.Figure(go.Bar(
