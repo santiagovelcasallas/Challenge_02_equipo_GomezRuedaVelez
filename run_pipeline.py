@@ -12,9 +12,15 @@ Genera en outputs/:
   - respuestas_5_preguntas.json
 """
 
-import json, os
+import json, os, sys
 import pandas as pd
 from pathlib import Path
+
+# En Windows la consola usa cp1252 por defecto y no puede imprimir "→", "≈" ni
+# tildes: sin esto el resumen final revienta con UnicodeEncodeError aunque los
+# artefactos ya se hayan escrito bien. En Linux/Streamlit Cloud no cambia nada.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 from src import audit
 from src.cleaning_inventario  import clean_inventario,  integridad_inventario,  REGLAS_VALIDEZ as RV_INV
@@ -124,7 +130,7 @@ def main():
         "despues": {ds: _health_para_dashboard(despues_traz[ds]) for ds in despues_traz},
     }
     Path(f"{OUT_DIR}/health_score_report.json").write_text(
-        json.dumps(health_dash, ensure_ascii=False, indent=2))
+        json.dumps(health_dash, ensure_ascii=False, indent=2), encoding="utf-8")
 
     dec_dash = {
         "inventario":    _decisiones_para_dashboard(dec_inv),
@@ -132,7 +138,7 @@ def main():
         "feedback":      _decisiones_para_dashboard(dec_fb),
     }
     Path(f"{OUT_DIR}/decisiones_limpieza.json").write_text(
-        json.dumps(dec_dash, ensure_ascii=False, indent=2, default=str))
+        json.dumps(dec_dash, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
     # 2. Versión enriquecida con trazabilidad completa (para PDF/auditoría)
     health_traz = {
@@ -141,12 +147,12 @@ def main():
         for ds in ("inventario", "transacciones", "feedback")
     }
     Path(f"{OUT_DIR}/health_score_trazable.json").write_text(
-        json.dumps(health_traz, ensure_ascii=False, indent=2, default=str))
+        json.dumps(health_traz, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
     dec_traz = {"_principio": "evidencia calculada en runtime; _fuente = función exacta.",
                 "inventario": dec_inv, "transacciones": dec_tx, "feedback": dec_fb}
     Path(f"{OUT_DIR}/decisiones_limpieza_trazable.json").write_text(
-        json.dumps(dec_traz, ensure_ascii=False, indent=2, default=str))
+        json.dumps(dec_traz, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
     # 3. Resto de artefactos
     inv_clean.to_csv(f"{OUT_DIR}/inventario_limpio.csv",       index=False)
@@ -154,7 +160,7 @@ def main():
     fb_clean.to_csv( f"{OUT_DIR}/feedback_limpio.csv",          index=False)
     master.to_csv(   f"{OUT_DIR}/master_table.csv",             index=False)
     Path(f"{OUT_DIR}/respuestas_5_preguntas.json").write_text(
-        json.dumps(respuestas, ensure_ascii=False, indent=2, default=str))
+        json.dumps(respuestas, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
     # ── Resumen consola ────────────────────────────────────────────────────
     print("=== HEALTH SCORE (antes → después) ===")

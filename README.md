@@ -4,11 +4,40 @@ Pipeline de auditoría de calidad, integración y análisis gerencial para los t
 sistemas de TechLogistics (Inventario, Logística, Feedback de Clientes).
 
 > **Alcance de esta entrega**: Fase 1 (Auditoría de Calidad y Limpieza),
-> Fase 2 (Integración + Feature Engineering) y **Fase 3 (Dashboard Streamlit
-> + módulo de IA con Groq/Llama-3)**, con las 5 preguntas de alta gerencia
-> respondidas con evidencia numérica y gráfica real. **Pendiente**: el
-> documento de hallazgos en PDF con capturas del dashboard (ver checklist al
-> final de este README).
+> Fase 2 (Integración + Feature Engineering) y Fase 3 (Dashboard Streamlit
+> + módulo de IA con Groq/Llama-3), con las 5 preguntas de alta gerencia
+> respondidas con evidencia numérica, gráfica y pruebas de significancia
+> estadística. El **Documento de Hallazgos** está versionado en el repo:
+> [`Informe_Hallazgos_TechLogistics.pdf`](Informe_Hallazgos_TechLogistics.pdf).
+
+## 🔗 App desplegada
+
+<!-- TODO (equipo): reemplazar por la URL real de Streamlit Community Cloud.
+     Es un requisito explícito de la Guía de Validación ("README Profesional:
+     ...y enlace a la app en la nube"). -->
+
+**Dashboard en vivo:** `https://<PENDIENTE>.streamlit.app`
+
+## Documento de Hallazgos (PDF)
+
+El informe de consultoría está en la raíz del repo como
+[`Informe_Hallazgos_TechLogistics.pdf`](Informe_Hallazgos_TechLogistics.pdf):
+narrativa dirigida a la junta directiva, KPIs, **Plan de Acción con 3
+recomendaciones priorizadas** (complejidad Baja / Media / Alta) y las gráficas
+de evidencia de las 5 preguntas.
+
+Se regenera con:
+
+```bash
+python3 generar_informe.py     # requiere haber corrido run_pipeline.py antes
+```
+
+Ese script usa el mismo generador que el dashboard
+(`services/pdf_generator.py`), así que el PDF versionado y el que el usuario
+descarga desde la pestaña *Insights de IA* no pueden divergir. La diferencia:
+el del dashboard además anexa las recomendaciones de Llama-3 (requiere
+`GROQ_API_KEY`); el versionado se arma solo con evidencia calculada, para que
+sea reproducible sin claves.
 
 ## Cómo correr el dashboard (Fase 3)
 
@@ -64,30 +93,35 @@ Esto genera en `outputs/`:
 techlogistics/
 ├── data/                          # CSVs crudos (input)
 ├── src/                            # Pipeline de limpieza/análisis (Fase 1-2)
+│   ├── audit.py                    # Motor de auditoría: Health Score + _fuente citable
 │   ├── cleaning_inventario.py
 │   ├── cleaning_transacciones.py
 │   ├── cleaning_feedback.py
-│   ├── health_score.py
-│   ├── integration.py
-│   └── analysis.py
+│   ├── integration.py              # Sola Fuente de Verdad + feature engineering
+│   └── analysis.py                 # Las 5 preguntas + pruebas de significancia
 ├── ui/                             # Pestañas del dashboard (Fase 3)
 │   ├── components.py               # CSS, tarjetas ledger, tema Plotly
+│   ├── _stat_drawers.py            # Cajones estadísticos reutilizables
 │   ├── tab_auditoria.py
+│   ├── tab_tiempo.py               # Serie de tiempo (excluye fechas futuras)
 │   ├── tab_operaciones.py
 │   ├── tab_cliente.py
-│   └── tab_ia.py
+│   └── tab_ia.py                   # IA (Groq) + exportación del informe
 ├── services/
 │   ├── data_loader.py              # Carga/cacheo de outputs/ + filtros
-│   └── groq_client.py              # Integración con Groq (Llama-3)
+│   ├── groq_client.py              # Integración con Groq (Llama-3)
+│   └── pdf_generator.py            # Armado del Documento de Hallazgos (PDF)
 ├── assets/styles.css               # Identidad visual "Sala de Control de Datos"
 ├── .streamlit/
 │   ├── config.toml                 # Tema base de Streamlit
 │   └── secrets.toml.example        # Plantilla de la API key (NO subir la real)
 ├── app.py                          # Punto de entrada del dashboard
 ├── run_pipeline.py                 # Orquestador de Fase 1-2 (CLI)
+├── generar_informe.py              # Regenera el PDF de hallazgos versionado
+├── Informe_Hallazgos_TechLogistics.pdf   # Documento de Hallazgos (entregable)
 ├── requirements.txt
 ├── .gitignore
-├── outputs/                        # Resultados generados (no versionar en Git si pesan mucho)
+├── outputs/                        # Artefactos generados por el pipeline
 └── README.md
 ```
 

@@ -1,0 +1,14 @@
+# Sin esto, en Windows (core.autocrlf=true) Git aplica conversión LF->CRLF a
+# archivos que heurísticamente cree de texto y CORROMPE los binarios: el PDF
+# del informe y los PNG de las gráficas quedaban inservibles al clonar.
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+
+# Los CSV y JSON generados por el pipeline se normalizan a LF para que el diff
+# sea estable entre Windows, macOS y Linux (y entre local y Streamlit Cloud).
+*.csv  text eol=lf
+*.json text eol=lf
+*.py   text eol=lf
+*.md   text eol=lf

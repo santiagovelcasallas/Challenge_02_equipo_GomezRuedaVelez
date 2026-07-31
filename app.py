@@ -62,6 +62,10 @@ with st.sidebar:
     categorias = st.multiselect("Categoría", sorted(master["Categoria"].unique()))
     bodegas = st.multiselect("Bodega de origen", sorted(master["Bodega_Origen"].unique()))
     canales = st.multiselect("Canal de venta", sorted(master["Canal_Venta"].unique()))
+    # Caso de prueba "Normalización de Variables Categóricas" (Guía de Validación):
+    # una única opción coherente por región geográfica (BOG/Bogotá y MED/Medellín ya
+    # se consolidaron en la limpieza; 'Ventas_Web' quedó como 'Sin Ciudad').
+    ciudades = st.multiselect("Ciudad de destino", sorted(master["Ciudad_Destino"].unique()))
 
     st.write("")
     if st.button("🔄 Refrescar análisis"):
@@ -74,7 +78,7 @@ with st.sidebar:
         "Ciencia de Datos · Universidad EAFIT"
     )
 
-df_filtrado = apply_filters(master, fecha_range, categorias, bodegas, canales)
+df_filtrado = apply_filters(master, fecha_range, categorias, bodegas, canales, ciudades)
 
 # --- Hero ---
 hero(

@@ -5,6 +5,5 @@ scipy
 streamlit
 plotly
 groq
-seaborn
 xhtml2pdf
 markdown

@@ -5,9 +5,15 @@
 
 ## 1. Fuga de Capital y Rentabilidad
 
-**Hallazgo**: el **39.27%** de las transacciones (3,239 de las 8,249 con costo
+**Hallazgo**: el **39.23%** de las transacciones (3,234 de las 8,244 con costo
 conocido) tienen margen negativo, con una pérdida acumulada de **-USD
-11,692,624**.
+11,661,672**.
+
+> Estas cifras excluyen el SKU con costo atípico de $850,000 (PROD-1500,
+> marcado `Costo_Atipico=True`), que no se winsoriza para no enmascarar el
+> margen negativo real. La cifra bruta con ese registro incluido
+> (-USD 35.4M) está en `respuestas_5_preguntas.json` bajo
+> `cifra_bruta_con_outlier`.
 
 **¿Es un problema del canal Online?** Los datos **no respaldan esa
 hipótesis**. La tasa de transacciones con margen negativo es prácticamente
@@ -16,9 +22,9 @@ la misma en los cuatro canales:
 | Canal | % transacciones con margen negativo | Pérdida acumulada |
 |---|---|---|
 | Físico | 41.21% | -USD 3,122,093 |
-| WhatsApp | 40.98% | -USD 3,052,912 |
-| App | 37.44% | -USD 2,689,710 |
-| **Online** | **37.34%** (el más bajo) | -USD 2,827,909 |
+| WhatsApp | 40.95% | -USD 3,046,579 |
+| App | 37.38% | -USD 2,678,809 |
+| **Online** | **37.28%** (el más bajo) | -USD 2,814,191 |
 
 **Conclusión para la junta**: esto no es una falla de precios de un canal
 específico; es un **problema estructural del catálogo**: el precio de venta
@@ -126,7 +132,7 @@ físico.
 
 | # | Pregunta | Severidad | Cifra clave |
 |---|---|---|---|
-| 1 | Fuga de capital | 🔴 Alta | -USD 11.69M en margen negativo (39.3% de las ventas) |
+| 1 | Fuga de capital | 🔴 Alta | -USD 11.66M en margen negativo (39.2% de las ventas) |
 | 2 | Crisis logística vs NPS | 🟡 Baja evidencia | Correlación máxima -0.12 (débil) |
 | 3 | Venta invisible | 🔴 Alta | 17.45% del ingreso sin costo verificable |
 | 4 | Paradoja de fidelidad | 🟠 Media | Smartphones: NPS -4.22 pese a stock alto |

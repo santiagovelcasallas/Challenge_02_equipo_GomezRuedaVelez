@@ -1,0 +1,276 @@
+{
+  "inventario": {
+    "antes": {
+      "dataset": "inventario",
+      "n_registros": 2500,
+      "nulidad_por_columna_pct": {
+        "SKU_ID": 0.0,
+        "Categoria": 0.0,
+        "Stock_Actual": 4.0,
+        "Costo_Unitario_USD": 0.0,
+        "Punto_Reorden": 0.0,
+        "Lead_Time_Dias": 16.12,
+        "Bodega_Origen": 0.0,
+        "Ultima_Revision": 0.0
+      },
+      "_fuente_nulidad": "audit.nulidad_por_columna",
+      "duplicados": {
+        "n_filas": 2500,
+        "duplicados_fila_completa": 0,
+        "pct": 0.0
+      },
+      "_fuente_duplicados": "audit.reporte_duplicados",
+      "dimensiones": {
+        "completitud": 97.48,
+        "validez": 97.6,
+        "unicidad": 100.0,
+        "validez_defectos_por_regla": {
+          "stock_negativo": 60,
+          "costo_no_positivo": 0
+        }
+      },
+      "_fuente_dimensiones": "audit.completitud / audit.validez / audit.unicidad",
+      "health_score": 98.36,
+      "_fuente_health_score": "audit.health_score (promedio simple 1/3)",
+      "integridad_negocio": {},
+      "_nota_integridad": "Hallazgos de negocio: NO penalizan el health score (no son defectos de dato). Se reportan para justificar las decisiones de limpieza."
+    },
+    "despues": {
+      "dataset": "inventario",
+      "n_registros": 2500,
+      "nulidad_por_columna_pct": {
+        "SKU_ID": 0.0,
+        "Categoria": 0.0,
+        "Stock_Actual": 0.0,
+        "Costo_Unitario_USD": 0.0,
+        "Punto_Reorden": 0.0,
+        "Lead_Time_Dias": 16.12,
+        "Bodega_Origen": 0.0,
+        "Ultima_Revision": 0.0,
+        "Costo_Atipico": 0.0,
+        "Lead_Time_Dias_Clean": 0.0,
+        "Dias_Desde_Ultima_Revision": 0.0
+      },
+      "_fuente_nulidad": "audit.nulidad_por_columna",
+      "duplicados": {
+        "n_filas": 2500,
+        "duplicados_fila_completa": 0,
+        "pct": 0.0
+      },
+      "_fuente_duplicados": "audit.reporte_duplicados",
+      "dimensiones": {
+        "completitud": 97.98,
+        "validez": 100.0,
+        "unicidad": 100.0,
+        "validez_defectos_por_regla": {
+          "stock_negativo": 0,
+          "costo_no_positivo": 0
+        }
+      },
+      "_fuente_dimensiones": "audit.completitud / audit.validez / audit.unicidad",
+      "health_score": 99.33,
+      "_fuente_health_score": "audit.health_score (promedio simple 1/3)",
+      "integridad_negocio": {
+        "categoria_desconocida_residual": {
+          "n": 305,
+          "pct": 12.2,
+          "nota": "persiste como 'Sin Categoría': ausencia etiquetada, no recuperada"
+        },
+        "sku_id_duplicados": 0
+      },
+      "_nota_integridad": "Hallazgos de negocio: NO penalizan el health score (no son defectos de dato). Se reportan para justificar las decisiones de limpieza."
+    },
+    "delta": 0.97
+  },
+  "transacciones": {
+    "antes": {
+      "dataset": "transacciones",
+      "n_registros": 10000,
+      "nulidad_por_columna_pct": {
+        "Transaccion_ID": 0.0,
+        "SKU_ID": 0.0,
+        "Fecha_Venta": 0.0,
+        "Cantidad_Vendida": 0.0,
+        "Precio_Venta_Final": 0.0,
+        "Costo_Envio": 8.34,
+        "Tiempo_Entrega_Real": 0.0,
+        "Estado_Envio": 16.83,
+        "Ciudad_Destino": 0.0,
+        "Canal_Venta": 0.0
+      },
+      "_fuente_nulidad": "audit.nulidad_por_columna",
+      "duplicados": {
+        "n_filas": 10000,
+        "duplicados_fila_completa": 0,
+        "pct": 0.0
+      },
+      "_fuente_duplicados": "audit.reporte_duplicados",
+      "dimensiones": {
+        "completitud": 97.48,
+        "validez": 99.0,
+        "unicidad": 100.0,
+        "validez_defectos_por_regla": {
+          "cantidad_no_positiva": 100,
+          "tiempo_centinela_999": 50
+        }
+      },
+      "_fuente_dimensiones": "audit.completitud / audit.validez / audit.unicidad",
+      "health_score": 98.83,
+      "_fuente_health_score": "audit.health_score (promedio simple 1/3)",
+      "integridad_negocio": {},
+      "_nota_integridad": "Hallazgos de negocio: NO penalizan el health score (no son defectos de dato). Se reportan para justificar las decisiones de limpieza."
+    },
+    "despues": {
+      "dataset": "transacciones",
+      "n_registros": 10000,
+      "nulidad_por_columna_pct": {
+        "Transaccion_ID": 0.0,
+        "SKU_ID": 0.0,
+        "Fecha_Venta": 0.0,
+        "Cantidad_Vendida": 0.0,
+        "Precio_Venta_Final": 0.0,
+        "Costo_Envio": 0.0,
+        "Tiempo_Entrega_Real": 0.0,
+        "Estado_Envio": 0.0,
+        "Ciudad_Destino": 0.0,
+        "Canal_Venta": 0.0,
+        "Entrega_Atipica": 0.0,
+        "Fecha_Futura_Invalida": 0.0,
+        "Es_Venta_Fantasma": 0.0
+      },
+      "_fuente_nulidad": "audit.nulidad_por_columna",
+      "duplicados": {
+        "n_filas": 10000,
+        "duplicados_fila_completa": 0,
+        "pct": 0.0
+      },
+      "_fuente_duplicados": "audit.reporte_duplicados",
+      "dimensiones": {
+        "completitud": 100.0,
+        "validez": 100.0,
+        "unicidad": 100.0,
+        "validez_defectos_por_regla": {
+          "cantidad_no_positiva": 0,
+          "tiempo_centinela_999": 0
+        }
+      },
+      "_fuente_dimensiones": "audit.completitud / audit.validez / audit.unicidad",
+      "health_score": 100.0,
+      "_fuente_health_score": "audit.health_score (promedio simple 1/3)",
+      "integridad_negocio": {
+        "ventas_fantasma": {
+          "n": 1751,
+          "pct": 17.51
+        },
+        "sin_ciudad_ventas_web": {
+          "n": 1290,
+          "pct": 12.9
+        },
+        "estado_sin_informacion": {
+          "n": 1683,
+          "pct": 16.83
+        },
+        "fechas_futuras": {
+          "n": 75,
+          "pct": 0.75
+        }
+      },
+      "_nota_integridad": "Hallazgos de negocio: NO penalizan el health score (no son defectos de dato). Se reportan para justificar las decisiones de limpieza."
+    },
+    "delta": 1.17
+  },
+  "feedback": {
+    "antes": {
+      "dataset": "feedback",
+      "n_registros": 4500,
+      "nulidad_por_columna_pct": {
+        "Feedback_ID": 0.0,
+        "Transaccion_ID": 0.0,
+        "Rating_Producto": 0.0,
+        "Rating_Logistica": 0.0,
+        "Comentario_Texto": 14.6,
+        "Recomienda_Marca": 24.87,
+        "Ticket_Soporte_Abierto": 0.0,
+        "Edad_Cliente": 0.0,
+        "Satisfaccion_NPS": 0.0
+      },
+      "_fuente_nulidad": "audit.nulidad_por_columna",
+      "duplicados": {
+        "n_filas": 4500,
+        "duplicados_fila_completa": 0,
+        "pct": 0.0
+      },
+      "_fuente_duplicados": "audit.reporte_duplicados",
+      "dimensiones": {
+        "completitud": 95.61,
+        "validez": 99.0,
+        "unicidad": 100.0,
+        "validez_defectos_por_regla": {
+          "rating_producto_fuera_1_5": 30,
+          "rating_logistica_fuera_1_5": 0,
+          "edad_imposible": 23,
+          "nps_fuera_rango": 0
+        }
+      },
+      "_fuente_dimensiones": "audit.completitud / audit.validez / audit.unicidad",
+      "health_score": 98.2,
+      "_fuente_health_score": "audit.health_score (promedio simple 1/3)",
+      "integridad_negocio": {},
+      "_nota_integridad": "Hallazgos de negocio: NO penalizan el health score (no son defectos de dato). Se reportan para justificar las decisiones de limpieza."
+    },
+    "despues": {
+      "dataset": "feedback",
+      "n_registros": 4500,
+      "nulidad_por_columna_pct": {
+        "Feedback_ID": 0.0,
+        "Transaccion_ID": 0.0,
+        "Rating_Producto": 0.0,
+        "Rating_Logistica": 0.0,
+        "Comentario_Texto": 0.0,
+        "Recomienda_Marca": 0.0,
+        "Ticket_Soporte_Abierto": 0.0,
+        "Edad_Cliente": 0.0,
+        "Satisfaccion_NPS": 0.0,
+        "Feedback_UID": 0.0,
+        "NPS_Categoria": 0.0
+      },
+      "_fuente_nulidad": "audit.nulidad_por_columna",
+      "duplicados": {
+        "n_filas": 4500,
+        "duplicados_fila_completa": 0,
+        "pct": 0.0
+      },
+      "_fuente_duplicados": "audit.reporte_duplicados",
+      "dimensiones": {
+        "completitud": 100.0,
+        "validez": 100.0,
+        "unicidad": 100.0,
+        "validez_defectos_por_regla": {
+          "rating_producto_fuera_1_5": 0,
+          "rating_logistica_fuera_1_5": 0,
+          "edad_imposible": 0,
+          "nps_fuera_rango": 0
+        }
+      },
+      "_fuente_dimensiones": "audit.completitud / audit.validez / audit.unicidad",
+      "health_score": 100.0,
+      "_fuente_health_score": "audit.health_score (promedio simple 1/3)",
+      "integridad_negocio": {
+        "colision_feedback_id": {
+          "ids": 469,
+          "filas": 969
+        },
+        "comentario_ausente": {
+          "n": 1288,
+          "pct": 28.62
+        },
+        "recomendacion_sin_respuesta": {
+          "n": 1119,
+          "pct": 24.87
+        }
+      },
+      "_nota_integridad": "Hallazgos de negocio: NO penalizan el health score (no son defectos de dato). Se reportan para justificar las decisiones de limpieza."
+    },
+    "delta": 1.8
+  }
+}

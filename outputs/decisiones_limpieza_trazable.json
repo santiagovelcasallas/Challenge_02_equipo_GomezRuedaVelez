@@ -1,0 +1,293 @@
+{
+  "_principio": "evidencia calculada en runtime; _fuente = función exacta.",
+  "inventario": [
+    {
+      "campo": "Categoria",
+      "problema": "variantes de formato (smart-phone, LAPTOP) y marcador '???'",
+      "evidencia": {
+        "variantes_formato": 609,
+        "categoria_desconocida": 305,
+        "pct_desconocida": 12.2
+      },
+      "accion": "unificar formato; '???' -> categoría explícita 'Sin Categoría'",
+      "justificacion": "no se imputa una categoría real: fabricaría un segmento de negocio falso. Se etiqueta la ausencia y se excluye de análisis de margen por categoría, conservando la fila.",
+      "_fuente": "cleaning_inventario.clean_inventario#1"
+    },
+    {
+      "campo": "Stock_Actual",
+      "problema": "existencias negativas (imposibles) y nulos",
+      "evidencia": {
+        "negativos": 60,
+        "nulos": 100,
+        "skew": -0.023
+      },
+      "accion": "negativos y nulos -> NaN -> imputar MEDIANA agrupada por Categoria",
+      "justificacion": "skew=-0.023 (casi simétrica: media≈mediana); se usa MEDIANA por robustez ante extremos residuales por categoría. El negativo no se asume error de signo (no hay evidencia).",
+      "_fuente": "cleaning_inventario.clean_inventario#2"
+    },
+    {
+      "campo": "Costo_Unitario_USD",
+      "problema": "costo(s) extremo(s) que distorsionan KPIs de rentabilidad",
+      "evidencia": {
+        "iqr": {
+          "q1": 403.65,
+          "q3": 1125.29,
+          "iqr": 721.64,
+          "cerca_inferior": 0.05,
+          "cerca_superior": 2207.75,
+          "n_outliers": 1,
+          "pct_outliers": 0.04,
+          "valor_maximo": 850000.0,
+          "iqr_por_encima_de_cerca": 1174.8
+        },
+        "z_modificado_mad": {
+          "mediana": 755.17,
+          "mad": 359.83,
+          "umbral": 3.5,
+          "n_outliers": 1,
+          "mz_maximo": 1591.9
+        },
+        "negocio": {
+          "categoria": "Smartphones",
+          "veces_mediana_categoria": 1065.0
+        }
+      },
+      "accion": "marcar 'Costo_Atipico', CONSERVAR valor original, excluir de KPIs agregados (Guía: 'ver registros excluidos')",
+      "justificacion": "IQR y z-MAD coinciden en el conteo de outliers. NO se winsoriza: capar el costo enmascararía el margen negativo que busca la Pregunta 1. El z clásico no se usa (skew alto lo hace no fiable).",
+      "_fuente": "cleaning_inventario.clean_inventario#3 (usa audit.magnitud_outliers_iqr)"
+    },
+    {
+      "campo": "Lead_Time_Dias",
+      "problema": "texto mixto: numérico, rangos '25-30 días', 'Inmediato' y nulos",
+      "evidencia": {
+        "composicion": {
+          "numerico": 1210,
+          "rango": 454,
+          "Inmediato": 433,
+          "nulo": 403
+        },
+        "nulos_tras_parseo": 403,
+        "skew": 1.02
+      },
+      "accion": "parsear (rango->punto medio, Inmediato->0); nulos -> MEDIANA por categoría",
+      "justificacion": "skew=1.02; la MEDIANA es más representativa que la media para tiempos de reposición y robusta a la cola derecha.",
+      "_fuente": "cleaning_inventario.clean_inventario#4"
+    },
+    {
+      "campo": "Bodega_Origen",
+      "problema": "misma bodega escrita distinto ('norte' vs 'Norte')",
+      "evidencia": {
+        "nodos_antes": 6,
+        "nodos_despues": 5,
+        "conteo": {
+          "Norte": 844,
+          "Sur": 436,
+          "Bod-Ext-99": 424,
+          "Zona_Franca": 408,
+          "Occidente": 388
+        }
+      },
+      "accion": "normalizar formato de texto",
+      "justificacion": "'Bod-Ext-99' (3PL) y 'Zona_Franca' se conservan como nodos logísticos legítimos y distintos, no se fusionan con las regiones.",
+      "_fuente": "cleaning_inventario.clean_inventario#5"
+    },
+    {
+      "campo": "Ultima_Revision",
+      "problema": "ninguno (formato único YYYY-MM-DD, sin nulos)",
+      "evidencia": {
+        "nulos": 0
+      },
+      "accion": "parsear a fecha y derivar 'Dias_Desde_Ultima_Revision' (Pregunta 5)",
+      "justificacion": "dato limpio; solo se deriva la variable de antigüedad.",
+      "_fuente": "cleaning_inventario.clean_inventario#6"
+    }
+  ],
+  "transacciones": [
+    {
+      "campo": "Cantidad_Vendida",
+      "problema": "valor negativo imposible",
+      "evidencia": {
+        "valores_negativos_unicos": [
+          -5
+        ],
+        "n_afectados": 100,
+        "mediana_imputada": 7.0
+      },
+      "accion": "tratar -5 como nulo e imputar MEDIANA",
+      "justificacion": "el ÚNICO negativo es exactamente -5 (100 filas): patrón de código centinela, no error aleatorio. No se usa abs(-5)=5 porque fabricaría un valor sin respaldo. MEDIANA por robustez.",
+      "_fuente": "cleaning_transacciones.clean_transacciones#1"
+    },
+    {
+      "campo": "Tiempo_Entrega_Real",
+      "problema": "valor 999 (código centinela de error)",
+      "evidencia": {
+        "n_999": 50,
+        "otros_valores_>100": 0,
+        "mediana_imputada": 15.0
+      },
+      "accion": "999 -> nulo -> imputar MEDIANA; conservar bandera 'Entrega_Atipica'",
+      "justificacion": "no hay otros valores >100: el 999 es centinela aislado. La bandera permite excluirlos de la correlación tiempo-NPS (Pregunta 2).",
+      "_fuente": "cleaning_transacciones.clean_transacciones#2"
+    },
+    {
+      "campo": "Costo_Envio",
+      "problema": "nulos",
+      "evidencia": {
+        "nulos": 834,
+        "pct": 8.34,
+        "media": 52.41,
+        "mediana": 52.36,
+        "skew": 0.007
+      },
+      "accion": "imputar MEDIANA",
+      "justificacion": "skew=0.007 (simétrica): media≈mediana. Se elige MEDIANA por consistencia con el resto del pipeline; el resultado es equivalente.",
+      "_fuente": "cleaning_transacciones.clean_transacciones#3"
+    },
+    {
+      "campo": "Estado_Envio",
+      "problema": "nulos",
+      "evidencia": {
+        "nulos": 1683,
+        "pct": 16.83
+      },
+      "accion": "marcar como categoría explícita 'Sin Información' (NO imputar moda)",
+      "justificacion": "imputar la moda fabricaría una confirmación de entrega que no ocurrió. La ausencia se etiqueta, no se inventa.",
+      "_fuente": "cleaning_transacciones.clean_transacciones#4"
+    },
+    {
+      "campo": "Ciudad_Destino",
+      "problema": "variantes (BOG/Bogotá, MED/Medellín) y valor 'Ventas_Web' que no es ciudad",
+      "evidencia": {
+        "n_ventas_web": 1290,
+        "pct": 12.9,
+        "distribucion_canal_en_web": {
+          "Físico": 26.4,
+          "WhatsApp": 25.2,
+          "Online": 24.8,
+          "App": 23.6
+        },
+        "distribucion_canal_global": {
+          "Físico": 25.3,
+          "Online": 25.2,
+          "WhatsApp": 25.1,
+          "App": 24.4
+        }
+      },
+      "accion": "consolidar variantes; 'Ventas_Web' -> 'Sin Ciudad'",
+      "justificacion": "la distribución de canal dentro de 'Ventas_Web' (~25% c/u) es igual a la global: NO está correlacionado con un canal, así que no es recuperable como ciudad. Se trata como geo no disponible.",
+      "_fuente": "cleaning_transacciones.clean_transacciones#5"
+    },
+    {
+      "campo": "Fecha_Venta",
+      "problema": "posibles formatos mixtos y fechas posteriores al corte",
+      "evidencia": {
+        "no_parseables": 0,
+        "fechas_futuras": 75,
+        "corte": "2026-01-31",
+        "max_fecha": "2026-02-04"
+      },
+      "accion": "parsear DD/MM/AAAA; marcar 'Fecha_Futura_Invalida', excluir de series de tiempo",
+      "justificacion": "formato en realidad único (0 no parseables). Las futuras se aíslan, no se borran, para conservar el resto de la transacción.",
+      "_fuente": "cleaning_transacciones.clean_transacciones#6"
+    },
+    {
+      "campo": "SKU_ID",
+      "problema": "SKUs vendidos que no existen en el inventario maestro (Venta Fantasma)",
+      "evidencia": {
+        "n_huerfanas": 1751,
+        "pct": 17.51,
+        "skus_distintos": 480,
+        "repeticiones_media": 3.65,
+        "repeticiones_max": 10
+      },
+      "accion": "marcar 'Es_Venta_Fantasma'; conservar vía LEFT JOIN (Fase 2) para cuantificar impacto",
+      "justificacion": "muchos SKUs distintos con recurrencia orgánica y baja (media ~3.6, máx 10): patrón de FALLA DE CATÁLOGO (productos nuevos sin registrar), no de fraude (que se concentraría en pocos códigos).",
+      "_fuente": "cleaning_transacciones.clean_transacciones#7"
+    }
+  ],
+  "feedback": [
+    {
+      "campo": "Feedback_ID",
+      "problema": "IDs repetidos (el reto los llama 'duplicados intencionales')",
+      "evidencia": {
+        "duplicados_fila_completa": 0,
+        "ids_que_colisionan": 469,
+        "filas_involucradas": 969,
+        "grupos_con_contenido_identico": 0
+      },
+      "accion": "generar llave sustituta 'Feedback_UID'; NO borrar filas",
+      "justificacion": "0 filas idénticas y 0 grupos con contenido igual: NO son eventos duplicados sino colisión de llave. Borrarlos destruiría observaciones reales y distintas de clientes.",
+      "_fuente": "cleaning_feedback.clean_feedback#1"
+    },
+    {
+      "campo": "Rating_Producto",
+      "problema": "valor 99 en escala 1-5 (centinela)",
+      "evidencia": {
+        "n_99": 30,
+        "pct": 0.67,
+        "mediana": 3.0
+      },
+      "accion": "99 -> nulo -> imputar MEDIANA",
+      "justificacion": "variable ORDINAL: la MEDIANA es el estadístico apropiado (no la media).",
+      "_fuente": "cleaning_feedback.clean_feedback#2"
+    },
+    {
+      "campo": "Edad_Cliente",
+      "problema": "edades imposibles (>100, hasta 195)",
+      "evidencia": {
+        "n_invalidas": 23,
+        "edad_max_original": 195,
+        "skew_validas": 0.027,
+        "mediana": 50.0
+      },
+      "accion": ">100 -> nulo -> imputar MEDIANA",
+      "justificacion": "skew=0.027; MEDIANA robusta a extremos residuales y a asimetría.",
+      "_fuente": "cleaning_feedback.clean_feedback#3"
+    },
+    {
+      "campo": "Comentario_Texto",
+      "problema": "dos marcadores de ausencia distintos ('---' y nulo real)",
+      "evidencia": {
+        "marcador_guion": 631,
+        "nulo_real": 657
+      },
+      "accion": "unificar en 'Sin Comentario'",
+      "justificacion": "campo cualitativo: no hay forma válida de inferir texto faltante.",
+      "_fuente": "cleaning_feedback.clean_feedback#4"
+    },
+    {
+      "campo": "Recomienda_Marca",
+      "problema": "codificación mixta (SI/NO/Maybe) y no respuesta",
+      "evidencia": {
+        "sin_respuesta": 1119,
+        "pct": 24.87
+      },
+      "accion": "normalizar a Sí/No/Tal vez; nulo -> 'Sin Respuesta'",
+      "justificacion": "no se colapsa 'Tal vez' en Sí/No (sesgaría la lealtad) ni se imputa el nulo (fabricaría una postura del cliente).",
+      "_fuente": "cleaning_feedback.clean_feedback#5"
+    },
+    {
+      "campo": "Ticket_Soporte_Abierto",
+      "problema": "codificación mixta (Sí/No/1/0)",
+      "evidencia": {
+        "n_true": 2298
+      },
+      "accion": "normalizar a booleano True/False",
+      "justificacion": "unifica la representación de una variable binaria.",
+      "_fuente": "cleaning_feedback.clean_feedback#6"
+    },
+    {
+      "campo": "Satisfaccion_NPS",
+      "problema": "requiere interpretación (categorización), no reescalado",
+      "evidencia": {
+        "rango_observado": [
+          -99.8,
+          99.9
+        ]
+      },
+      "accion": "derivar 'NPS_Categoria' (Detractor<0, Pasivo 0-49, Promotor>=50)",
+      "justificacion": "el valor ya está en escala estándar (-99.8, 99.9) (-100..100): no se reescala. La 'normalización' del diccionario se interpreta como la categorización de negocio, sin alterar el número original.",
+      "_fuente": "cleaning_feedback.clean_feedback#7"
+    }
+  ]
+}
