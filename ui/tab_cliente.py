@@ -56,7 +56,7 @@ def render(df: pd.DataFrame):
     df_geo = con_nps[(con_nps["Ciudad_Destino"]!="Sin Ciudad")&(~con_nps["Entrega_Atipica"])].copy()
 
     if len(df_geo)<30:
-        st.info("Muy pocos registros para calcular correlaciones.")
+        st.info(f"Muy pocos registros con ciudad y NPS válidos (n={len(df_geo)}) para calcular correlaciones. Ajusta el filtro.")
     else:
         pr_g, pp_g = sci.pearsonr(df_geo["Tiempo_Entrega_Real"],df_geo["Satisfaccion_NPS_Prom"])
         sr_g, sp_g = sci.spearmanr(df_geo["Tiempo_Entrega_Real"],df_geo["Satisfaccion_NPS_Prom"])
@@ -141,8 +141,12 @@ def render(df: pd.DataFrame):
     paradoja  = resumen4[(resumen4["Stock prom"]>=stock_med)&(resumen4["NPS prom"]<nps_med)]
     cats_paradoja = list(paradoja.index)
 
-    grupos4 = [df_cat.loc[df_cat["Categoria"]==c,"Satisfaccion_NPS_Prom"].dropna().values for c in CATS]
-    H_kw, p_kw = sci.kruskal(*[g for g in grupos4 if len(g)>0])
+    grupos4 = [df_cat.loc[df_cat["Categoria"]==c,"Satisfaccion_NPS_Prom"].dropna().values
+               for c in CATS if len(df_cat[df_cat["Categoria"]==c])>0]
+    if len(grupos4) < 2:
+        st.info("Se necesitan al menos 2 categorías con datos para calcular Kruskal-Wallis. Ajusta el filtro de categoría.")
+        return
+    H_kw, p_kw = sci.kruskal(*grupos4)
 
     fig4 = px.scatter(
         resumen4.reset_index(), x="Stock prom", y="NPS prom",
