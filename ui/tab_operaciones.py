@@ -78,13 +78,19 @@ def render(df: pd.DataFrame):
         st.plotly_chart(fig1, use_container_width=True, key="p1_canal")
 
         # Pruebas
-        grupos = [g["Margen_Utilidad_USD"].dropna().values
-                  for _,g in df_c.groupby("Canal_Venta")]
+        grupos_dict = {c: g["Margen_Utilidad_USD"].dropna().values
+                       for c,g in df_c.groupby("Canal_Venta") if len(g)>0}
+        grupos = list(grupos_dict.values())
+        if len(grupos) < 2:
+            st.info("Se necesitan al menos 2 canales con datos para Kruskal-Wallis.")
+            return
         H_kw, p_kw = sci.kruskal(*grupos)
-        online_vals = df_c[df_c["Canal_Venta"]=="Online"]["Margen_Utilidad_USD"].dropna().values
-        mw = {c: round(float(sci.mannwhitneyu(online_vals,g,alternative="two-sided")[1]),4)
-              for c,g in zip(sorted(df_c["Canal_Venta"].unique()),grupos)
-              if c!="Online"}
+        online_vals = grupos_dict.get("Online", np.array([]))
+        mw = {}
+        if len(online_vals) > 0:
+            for c, v in grupos_dict.items():
+                if c != "Online" and len(v) > 0:
+                    mw[c] = round(float(sci.mannwhitneyu(online_vals,v,alternative="two-sided")[1]),4)
 
         online_pct = por_canal.loc["Online","pct_neg"] if "Online" in por_canal.index else 0
         fisico_pct = por_canal.loc["Físico","pct_neg"] if "Físico" in por_canal.index else 0
@@ -185,6 +191,9 @@ def render(df: pd.DataFrame):
         brecha_prom     =("Brecha_Entrega_Dias","mean"),
     ).round(2).reset_index()
 
+    if len(res5) < 2:
+        st.info("Se necesitan al menos 2 bodegas con datos para calcular la correlación.")
+        return
     r5, p5 = sci.pearsonr(res5["dias_revision"], res5["tasa_ticket_pct"])
 
     fig5 = px.scatter(
