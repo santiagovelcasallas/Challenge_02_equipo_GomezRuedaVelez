@@ -249,9 +249,11 @@ def p2_drawer(df_geo, pr_g, pp_g, sr_g, sp_g, df_corr):
             {"": "Spearman ρ", "Hipótesis": f"{sr_g:.4f}  p={sp_g:.4f}"},
             {"": "Decisión", "Hipótesis": "No rechazar H₀ — evidencia real, no falta de datos"},
         ])
-        if len(df_corr):
+        if len(df_corr) and not df_corr.empty and "Pearson r" in df_corr.columns:
             st.markdown("**Correlaciones por ciudad (todas NS):**")
             st.dataframe(df_corr, hide_index=True, use_container_width=True)
+        elif df_corr.empty:
+            st.info("Sin ciudades con n≥30 en este filtro — no se calculan correlaciones por ciudad.")
 
         with plt.rc_context(MPL):
             fig, axes = plt.subplots(1, 3, figsize=(14, 4), facecolor="#161D2F")
