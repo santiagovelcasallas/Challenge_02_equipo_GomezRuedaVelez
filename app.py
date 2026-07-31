@@ -10,7 +10,6 @@ Streamlit Cloud sin pasos manuales.
 
 import streamlit as st
 from pathlib import Path
-from services.pdf_report import generate_board_report
 
 # ── Auto-pipeline: corre si faltan outputs o los datos son más nuevos ──────
 def _necesita_pipeline() -> bool:
@@ -76,30 +75,6 @@ with st.sidebar:
     )
 
 df_filtrado = apply_filters(master, fecha_range, categorias, bodegas, canales)
-
-
-# ... Tu código existente del sidebar ...
-
-st.write("---")
-st.markdown("## 📄 Exportar")
-
-# Caché para que no recalcule el PDF en cada mínimo cambio de UI, solo si cambia el filtro
-@st.cache_data(show_spinner=False)
-def get_pdf(dataframe):
-    return generate_board_report(dataframe)
-
-# Genera el documento usando la tabla maestra filtrada que ya posees
-with st.spinner("Generando documento para junta..."):
-    pdf_bytes = get_pdf(df_filtrado)
-    
-st.download_button(
-    label="📥 Descargar Informe PDF",
-    data=pdf_bytes,
-    file_name="TechLogistics_Informe_Junta.pdf",
-    mime="application/pdf",
-    type="primary"
-)
-
 
 # --- Hero ---
 hero(
