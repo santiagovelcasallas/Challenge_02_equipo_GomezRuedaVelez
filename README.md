@@ -139,12 +139,3 @@ git push -u origin main
 Luego, en https://share.streamlit.io: **New app** → selecciona el repo →
 `app.py` como archivo principal → en *Advanced settings → Secrets* pega tu
 `GROQ_API_KEY` → **Deploy**.
-
-## Próximos pasos (pendiente)
-
-- Documento de hallazgos en PDF con capturas del dashboard (4+ exigidas) y
-  el plan de acción de 3 recomendaciones priorizadas (baja/media/alta
-  complejidad) — el contenido narrativo ya está listo en
-  `outputs/hallazgos_gerenciales.md`, solo falta maquetarlo con capturas.
-- Desplegar el dashboard en Streamlit Community Cloud y agregar el enlace
-  al README (ver guía de despliegue que te compartí en el chat).
