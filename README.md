@@ -53,7 +53,7 @@ A mayor tiempo sin revisión física del stock, mayor porcentaje de tickets de s
 
 ## 3. App desplegada
 
-**Dashboard en vivo:** `https://<PENDIENTE>.streamlit.app`
+**Dashboard en vivo:** `(https://challenge02equipogomezruedavelez-kmzecxnmygaj8juvgyjgsh.streamlit.app/)`
 
 > Reemplazar por la URL real de Streamlit Community Cloud tras el despliegue.  
 > Es requisito explícito de la Guía de Validación (§ 3.3 README Profesional).
